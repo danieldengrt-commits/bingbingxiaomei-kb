@@ -1,0 +1,241 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} · 冰冰小美知识库{% endblock %}
+
+{% block extra_css %}
+  .article-header {
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 4px solid var(--border);
+  }
+  .article-breadcrumb {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.75rem;
+  }
+  .article-breadcrumb a {
+    color: var(--ink);
+    text-decoration: none;
+    font-weight: 700;
+  }
+  .article-breadcrumb a:hover { text-decoration: underline; text-underline-offset: 2px; }
+  .article-header h1 {
+    font-weight: 900;
+    font-size: clamp(1.4rem, 2.5vw, 1.8rem);
+    line-height: 1.2;
+  }
+  .article-meta {
+    margin-top: 0.4rem;
+    font-size: 0.7rem;
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+  }
+
+  .article-body {
+    border: 3px solid var(--border);
+    background: #fff;
+    padding: 1.5rem 1.5rem 1rem;
+    font-size: 0.85rem;
+    line-height: 1.75;
+    margin-bottom: 2rem;
+  }
+  .article-body h2 {
+    font-weight: 900;
+    font-size: 1.1rem;
+    margin: 1.25rem 0 0.5rem;
+    padding-top: 1rem;
+    border-top: 2px solid var(--border);
+  }
+  .article-body h2:first-child {
+    border-top: none;
+    padding-top: 0;
+    margin-top: 0;
+  }
+  .article-body h3 {
+    font-weight: 700;
+    font-size: 0.88rem;
+    margin: 0.75rem 0 0.3rem;
+    color: #333;
+  }
+  .article-body blockquote {
+    border-left: 3px solid var(--accent3);
+    padding: 0.4rem 0 0.4rem 1rem;
+    margin: 0.5rem 0;
+    background: var(--paper);
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #333;
+  }
+  .article-body pre {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    line-height: 1.5;
+    background: var(--paper);
+    border: 2px solid var(--border);
+    padding: 0.75rem;
+    margin: 0.5rem 0;
+    overflow-x: auto;
+    white-space: pre;
+  }
+  .article-body p { margin-bottom: 0.5rem; }
+  .article-body strong { color: #000; font-weight: 900; }
+  .article-body em { color: var(--accent2); font-style: normal; }
+  .article-body a.wiki-link {
+    color: var(--accent);
+    font-weight: 600;
+    text-decoration: none;
+    border-bottom: 2px solid var(--accent);
+    transition: all .1s;
+  }
+  .article-body a.wiki-link:hover {
+    background: var(--accent);
+    color: #fff;
+  }
+  .article-body table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0.75rem 0;
+    font-size: 0.75rem;
+  }
+  .article-body th {
+    background: var(--paper);
+    border: 2px solid var(--border);
+    padding: 0.4rem 0.6rem;
+    font-weight: 700;
+    text-align: left;
+  }
+  .article-body td {
+    border: 2px solid var(--border);
+    padding: 0.4rem 0.6rem;
+  }
+  .wiki-link-unresolved {
+    color: var(--muted);
+    text-decoration: underline;
+    text-decoration-style: dashed;
+    text-underline-offset: 3px;
+    cursor: help;
+  }
+
+  .backlinks-section {
+    margin-bottom: 2rem;
+    border-top: 4px solid var(--border);
+    padding-top: 1.5rem;
+  }
+  .backlinks-section .section-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.75rem;
+  }
+  .backlinks-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    list-style: none;
+    padding: 0;
+  }
+  .backlinks-list li a {
+    display: inline-block;
+    padding: 0.35rem 0.75rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--ink);
+    text-decoration: none;
+    border: 2px solid var(--border);
+    background: #fff;
+    transition: all .1s;
+  }
+  .backlinks-list li a:hover {
+    border-color: var(--accent);
+    background: var(--paper);
+  }
+  .backlinks-empty {
+    font-size: 0.8rem;
+    color: var(--muted);
+    font-style: italic;
+  }
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: 1rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--ink);
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
+    transition: border-color .1s;
+  }
+  .back-link:hover { border-bottom-color: var(--accent); }
+
+  /* 回到顶部 */
+  .back-to-top {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    width: 44px;
+    height: 44px;
+    border: 3px solid var(--ink);
+    background: #fff;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    font-weight: 900;
+    color: var(--ink);
+    z-index: 999;
+    transition: all .12s;
+  }
+  .back-to-top:hover { background: var(--ink); color: #fff; }
+  .back-to-top.visible { display: flex; }
+{% endblock %}
+
+{% block content %}
+<div class="article-breadcrumb">
+  <a href="{{ url_for('index') }}">首页</a>
+  <span>&rsaquo;</span>
+  <span style="color:var(--ink); font-weight:700;">{{ title }}</span>
+</div>
+
+<div class="article-header">
+  <h1>{{ title }}</h1>
+  {% if source_path %}
+  <div class="article-meta">来源: {{ source_path }}</div>
+  {% endif %}
+</div>
+
+<div class="article-body">
+  {{ content|safe }}
+</div>
+
+<div class="backlinks-section">
+  <div class="section-label">反向链接 · 谁链接到了「{{ title }}」</div>
+  {% if backlinks %}
+  <ul class="backlinks-list">
+    {% for bl in backlinks %}
+    <li><a href="{{ bl.url }}">{{ bl.title }}</a></li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="backlinks-empty">暂无其他页面链接到「{{ title }}」</p>
+  {% endif %}
+</div>
+
+<a href="{{ url_for('index') }}" class="back-link">&#8592; 返回首页</a>
+
+<div class="back-to-top" id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="回到顶部">&uarr;</div>
+<script>
+(function() {
+  var btn = document.getElementById('backToTop');
+  window.addEventListener('scroll', function() {
+    btn.classList.toggle('visible', window.scrollY > 400);
+  });
+})();
+</script>
+{% endblock %}

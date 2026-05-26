@@ -1,0 +1,436 @@
+{% extends "base.html" %}
+
+{% block title %}时间线 · 冰冰小美知识库{% endblock %}
+
+{% block extra_css %}
+  .tl-header {
+    margin-bottom: 1.5rem;
+  }
+  .tl-header .breadcrumb {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--muted);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+  .tl-header .breadcrumb a {
+    color: var(--ink);
+    text-decoration: none;
+    font-weight: 700;
+  }
+  .tl-header .breadcrumb a:hover { text-decoration: underline; text-underline-offset: 3px; }
+  .tl-header h1 {
+    font-weight: 900;
+    font-size: clamp(1.5rem, 3vw, 2rem);
+  }
+
+  /* 置顶帖 */
+  .pinned-post {
+    border: 4px solid var(--accent3);
+    background: #fff;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.5rem;
+    position: relative;
+  }
+  .pinned-badge {
+    position: absolute;
+    top: -1px; right: -1px;
+    background: var(--accent3);
+    color: #fff;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.5rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    padding: 0.25rem 0.7rem;
+  }
+  .pinned-post .pp-meta {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    margin-bottom: 0.5rem;
+  }
+  .pinned-post .pp-content {
+    font-size: 0.85rem;
+    line-height: 1.7;
+    max-height: 300px;
+    overflow-y: auto;
+  }
+  .pinned-post .pp-content h1 { display: none; }
+  .pinned-post .pp-content blockquote:first-of-type { display: none; }
+  .pinned-post .pp-content hr { display: none; }
+  .pinned-post .pp-content h2 { font-weight: 900; font-size: 0.95rem; color: var(--accent); margin: 0.4rem 0 0.15rem; padding-top: 0.4rem; border-top: 2px solid var(--border); }
+  .pinned-post .pp-content h2:first-of-type { border-top: none; padding-top: 0; }
+  .pinned-post .pp-content strong { color: #000; font-weight: 900; }
+  .pinned-post .pp-content em { color: var(--accent2); font-style: normal; }
+  .pinned-post .pp-content a { color: var(--accent); font-weight: 600; text-decoration: none; border-bottom: 2px solid var(--accent); }
+  .pinned-post .pp-content ul, .pinned-post .pp-content ol { padding-left: 1.3rem; margin: 0.3rem 0; }
+
+  /* Tab 切换 */
+  .tl-tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 4px solid var(--border);
+    margin-bottom: 1rem;
+  }
+  .tl-tab {
+    padding: 0.6rem 1.5rem;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border: none;
+    background: none;
+    color: var(--muted);
+    font-weight: 700;
+    transition: all .12s;
+    border-bottom: 4px solid transparent;
+    margin-bottom: -4px;
+  }
+  .tl-tab:hover { color: var(--ink); }
+  .tl-tab.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+
+  /* 搜索过滤标签 */
+  .tl-filter-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: var(--accent);
+    color: #fff;
+    padding: 0.3rem 0.75rem;
+    margin-bottom: 1rem;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.55rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .tl-filter-tag a {
+    color: #fff;
+    text-decoration: none;
+  }
+  .tl-filter-tag .clear-filter {
+    cursor: pointer;
+    font-weight: 900;
+    font-size: 0.7rem;
+    line-height: 1;
+    opacity: 0.7;
+    color: #fff;
+    text-decoration: none;
+    margin-left: 0.2rem;
+  }
+  .tl-filter-tag .clear-filter:hover { opacity: 1; }
+  .tl-filter-count {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.55rem;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    margin-bottom: 1rem;
+  }
+
+  /* Feed 列表 */
+  .tl-feed {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .tl-card {
+    border: 3px solid var(--border);
+    border-bottom: none;
+    padding: 1rem 1.25rem;
+    background: #fff;
+    transition: background .1s;
+  }
+  .tl-card:last-of-type { border-bottom: 3px solid var(--border); }
+  .tl-card:hover { background: var(--paper); }
+  .tl-card .tc-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.4rem;
+    flex-wrap: wrap;
+  }
+  .tl-card .tc-date {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+  .tl-card .tc-chars {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.45rem;
+    color: #aaa;
+    letter-spacing: 0.05em;
+  }
+  .tl-card .tc-tag {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.42rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.1rem 0.35rem;
+    border: 1.5px solid var(--accent2);
+    color: var(--accent2);
+  }
+  .tl-card .tc-title {
+    font-weight: 700;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    color: var(--ink);
+    margin-bottom: 0.2rem;
+  }
+  .tl-card .tc-snippet {
+    font-size: 0.8rem;
+    line-height: 1.6;
+    color: #444;
+  }
+  .tl-card .tc-expand {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.52rem;
+    color: var(--accent);
+    cursor: pointer;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-top: 0.3rem;
+    display: inline-block;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .tl-card .tc-expand:hover { color: var(--accent2); }
+  .tl-card .tc-full {
+    display: none;
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 2px solid var(--border);
+    font-size: 0.82rem;
+    line-height: 1.7;
+  }
+  .tl-card .tc-full.open { display: block; }
+  .tl-card .tc-full h1 { display: none; }
+  .tl-card .tc-full blockquote:first-of-type { display: none; }
+  .tl-card .tc-full hr { display: none; }
+  .tl-card .tc-full h2 { font-weight: 900; font-size: 0.9rem; color: var(--accent); margin: 0.4rem 0 0.15rem; padding-top: 0.4rem; border-top: 2px solid var(--border); }
+  .tl-card .tc-full h2:first-of-type { border-top: none; padding-top: 0; }
+  .tl-card .tc-full strong { color: #000; font-weight: 900; }
+  .tl-card .tc-full em { color: var(--accent2); font-style: normal; }
+  .tl-card .tc-full a { color: var(--accent); font-weight: 600; text-decoration: none; border-bottom: 2px solid var(--accent); }
+  .tl-card .tc-full ul, .tl-card .tc-full ol { padding-left: 1.3rem; margin: 0.3rem 0; }
+  .tl-card .tc-full table { width: 100%; border-collapse: collapse; margin: 0.4rem 0; font-size: 0.7rem; }
+  .tl-card .tc-full thead th { font-family: 'Space Mono', monospace; font-size: 0.48rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); text-align: left; padding: 0.25rem 0.4rem; border-bottom: 2px solid var(--border); }
+  .tl-card .tc-full tbody td { padding: 0.2rem 0.4rem; border-bottom: 1px solid #ddd; }
+  .tl-card .tc-full pre { font-family: 'Space Mono', monospace; font-size: 0.58rem; background: var(--paper); border: 2px solid var(--border); padding: 0.5rem; margin: 0.4rem 0; overflow-x: auto; white-space: pre; }
+  .tl-card .tc-full code { font-family: 'Space Mono', monospace; font-size: 0.65rem; background: var(--paper); padding: 0.05rem 0.3rem; border: 1px solid #ddd; }
+  .tl-card .tc-full pre code { font-size: inherit; background: none; padding: 0; border: none; }
+
+  .tl-loading {
+    text-align: center;
+    padding: 2rem;
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+  }
+  .tl-end {
+    text-align: center;
+    padding: 1.5rem;
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.55rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+
+  @media (max-width: 900px) {
+    .tl-card { padding: 0.75rem 1rem; }
+  }
+{% endblock %}
+
+{% block content %}
+<!-- HEADER -->
+<div class="tl-header">
+  <div class="breadcrumb"><a href="{{ url_for('posts_landing') }}">看看帖子</a> / 时间线</div>
+  <h1>时间线阅读</h1>
+</div>
+
+<!-- 搜索过滤 -->
+{% if search_query %}
+<div class="tl-filter-tag">
+  筛选: {{ search_query }}
+  <a href="{{ url_for('posts_timeline') }}" class="clear-filter" title="清除筛选">&#x2715;</a>
+</div>
+<div class="tl-filter-count">找到 {{ first_page_all.total }} 篇相关帖子</div>
+{% endif %}
+<!-- 置顶帖 -->
+{% if pinned_post and not search_query %}
+<div class="pinned-post">
+  <span class="pinned-badge">置顶</span>
+  <div class="pp-meta">{{ pinned_post.date }} · {{ pinned_post.source }}</div>
+  <div class="pp-content">{{ pinned_post.html | safe }}</div>
+</div>
+{% endif %}
+
+<!-- Tabs -->
+<div class="tl-tabs">
+  <button class="tl-tab active" id="tabAll" onclick="switchTab('all')">全部帖子</button>
+  <button class="tl-tab" id="tabKey" onclick="switchTab('key')">重点帖子</button>
+</div>
+
+<!-- Feed -->
+<div class="tl-feed" id="tlFeed"></div>
+<div class="tl-loading" id="tlLoading" style="display:none">加载中...</div>
+<div class="tl-end" id="tlEnd" style="display:none">— 全部加载完毕 —</div>
+
+<script>
+var apiBase = window.location.hostname === 'localhost' ? '' : 'https://api.bbxmkb.cn';
+var currentTab = 'all';
+var currentPage = 1;
+var hasMore = true;
+var isLoading = false;
+var firstPageData = null;
+var searchQuery = {{ ('"' + search_query + '"') | safe if search_query else 'null' }};
+
+// 首屏数据（服务端渲染，JSON 内嵌）
+var INITIAL_ALL = {{ first_page_all | tojson | safe }};
+var INITIAL_KEY = {{ first_page_key | tojson | safe }};
+
+function buildFeedCard(item) {
+  var tags = item.tags || [];
+  var tagHTML = '';
+  tags.forEach(function(t) {
+    if (t && t !== '帖子' && t !== '雪球' && t !== '冰冰小美') {
+      tagHTML += '<span class="tc-tag">' + t.replace('#','') + '</span>';
+    }
+  });
+  var chars = item.char_count ? (item.char_count >= 1000 ? Math.round(item.char_count/1000) + 'k字' : item.char_count + '字') : '';
+  var title = item.title || '';
+
+  return '<div class="tl-card" data-id="' + (item.filepath || '') + '">' +
+    '<div class="tc-meta">' +
+      '<span class="tc-date">' + (item.date || '?') + '</span>' +
+      (chars ? '<span class="tc-chars">' + chars + '</span>' : '') +
+      tagHTML +
+    '</div>' +
+    (title ? '<div class="tc-title">' + title + '</div>' : '') +
+    '<div class="tc-snippet">' + (item.snippet || '') + '</div>' +
+    '<span class="tc-expand" onclick="expandCard(this)">展开全文</span>' +
+    '<div class="tc-full" data-loaded="false"></div>' +
+    '</div>';
+}
+
+function renderInitialData(data) {
+  var feed = document.getElementById('tlFeed');
+  feed.innerHTML = '';
+  if (data && data.items) {
+    data.items.forEach(function(item) { feed.innerHTML += buildFeedCard(item); });
+    hasMore = data.has_more;
+    currentPage = data.page;
+    if (!hasMore) document.getElementById('tlEnd').style.display = 'block';
+  }
+}
+
+function switchTab(tab) {
+  if (tab === currentTab) return;
+  currentTab = tab;
+  currentPage = 1;
+  hasMore = true;
+  document.getElementById('tlEnd').style.display = 'none';
+
+  document.getElementById('tabAll').classList.toggle('active', tab === 'all');
+  document.getElementById('tabKey').classList.toggle('active', tab === 'key');
+
+  if (tab === 'all') {
+    renderInitialData(INITIAL_ALL);
+  } else {
+    renderInitialData(INITIAL_KEY);
+  }
+}
+
+function loadMore() {
+  if (isLoading || !hasMore) return;
+  isLoading = true;
+  document.getElementById('tlLoading').style.display = 'block';
+
+  var nextPage = currentPage + 1;
+  var url = apiBase + '/api/posts/page/' + nextPage + '?filter=' + currentTab;
+  if (searchQuery) url += '&q=' + encodeURIComponent(searchQuery);
+  fetch(url)
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      document.getElementById('tlLoading').style.display = 'none';
+      if (data && data.items && data.items.length > 0) {
+        var feed = document.getElementById('tlFeed');
+        data.items.forEach(function(item) { feed.innerHTML += buildFeedCard(item); });
+        currentPage = data.page;
+        hasMore = data.has_more;
+        if (!hasMore) document.getElementById('tlEnd').style.display = 'block';
+      } else {
+        hasMore = false;
+        document.getElementById('tlEnd').style.display = 'block';
+      }
+      isLoading = false;
+    })
+    .catch(function() {
+      document.getElementById('tlLoading').style.display = 'none';
+      isLoading = false;
+    });
+}
+
+function expandCard(el) {
+  var fullDiv = el.nextElementSibling;
+  var card = el.closest('.tl-card');
+  var filepath = card.getAttribute('data-id');
+
+  if (fullDiv.classList.contains('open')) {
+    fullDiv.classList.remove('open');
+    el.textContent = '展开全文';
+    return;
+  }
+
+  if (fullDiv.getAttribute('data-loaded') === 'true') {
+    fullDiv.classList.add('open');
+    el.textContent = '收起';
+    return;
+  }
+
+  // 加载完整内容
+  el.textContent = '加载中...';
+  fetch(apiBase + '/api/posts/load?path=' + encodeURIComponent(filepath))
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.html) {
+        fullDiv.innerHTML = data.html;
+        fullDiv.setAttribute('data-loaded', 'true');
+        fullDiv.classList.add('open');
+        el.textContent = '收起';
+      } else {
+        el.textContent = '加载失败';
+      }
+    })
+    .catch(function() {
+      el.textContent = '加载失败';
+    });
+}
+
+// 无限滚动
+var observer = new IntersectionObserver(function(entries) {
+  entries.forEach(function(entry) {
+    if (entry.isIntersecting) loadMore();
+  });
+}, { threshold: 0.1 });
+
+// 初始化
+renderInitialData(INITIAL_ALL);
+
+// 观察加载指示器
+var loadingEl = document.getElementById('tlLoading');
+if (loadingEl) observer.observe(loadingEl);
+// 观察底部
+var endEl = document.getElementById('tlEnd');
+if (endEl) observer.observe(endEl);
+</script>
+{% endblock %}

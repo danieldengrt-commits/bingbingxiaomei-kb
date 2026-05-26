@@ -1,0 +1,379 @@
+{% extends "base.html" %}
+
+{% block title %}知识库 · 冰冰小美{% endblock %}
+
+{% block extra_css %}
+  .kb-header {
+    margin-bottom: 2rem;
+  }
+  .kb-header h1 {
+    font-weight: 900;
+    font-size: clamp(1.8rem, 3.5vw, 2.5rem);
+    line-height: 1.1;
+  }
+  .kb-breadcrumb {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--muted);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+  .kb-breadcrumb a {
+    color: var(--ink);
+    text-decoration: none;
+    font-weight: 700;
+  }
+  .kb-breadcrumb a:hover { text-decoration: underline; text-underline-offset: 3px; }
+  .export-btn {
+    display: inline-block;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.55rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--muted);
+    border: 2px solid var(--border);
+    padding: 0.35rem 0.75rem;
+    white-space: nowrap;
+    transition: all .15s;
+    flex-shrink: 0;
+    margin-top: 0.15rem;
+  }
+  .export-btn:hover {
+    color: var(--ink);
+    border-color: var(--accent);
+    background: #fff;
+  }
+  .kb-desc {
+    margin-bottom: 2.5rem;
+    border-left: 4px solid var(--accent);
+    padding-left: 1.25rem;
+  }
+  .kb-desc-placeholder {
+    font-size: 0.85rem;
+    color: var(--muted);
+    font-style: italic;
+    line-height: 1.6;
+    padding: 1rem 0;
+  }
+
+  .kb-columns {
+    display: flex;
+    gap: 1.5rem;
+    align-items: flex-start;
+  }
+  .kb-col {
+    border-top: 4px solid var(--border);
+    padding-top: 1rem;
+  }
+  .kb-col .section-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.75rem;
+  }
+  .kb-col-desc {
+    font-size: 0.7rem;
+    color: var(--muted);
+    line-height: 1.4;
+    margin-bottom: 0.75rem;
+    min-height: 2.8rem;
+  }
+
+  .layer-group {
+    margin-bottom: 1.5rem;
+  }
+  .layer-header {
+    font-weight: 700;
+    font-size: 0.75rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.6rem;
+  }
+  .layer-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  .node-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .node-card {
+    position: relative;
+    cursor: pointer;
+    border: 3px solid var(--border);
+    padding: 0.5rem 0.9rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-decoration: none;
+    color: var(--ink);
+    background: #fff;
+    transition: all .12s;
+  }
+  .node-card:hover {
+    border-color: var(--accent);
+    transform: translate(-1px, -1px);
+  }
+  .node-card:hover::after {
+    content: attr(data-sub);
+    position: absolute;
+    bottom: calc(100% + 4px);
+    left: 0;
+    background: #fff;
+    border: 3px solid var(--border);
+    padding: 0.35rem 0.6rem;
+    font-family: 'Noto Sans SC', sans-serif;
+    font-size: 0.68rem;
+    font-weight: 500;
+    color: var(--ink);
+    white-space: nowrap;
+    z-index: 999;
+    pointer-events: none;
+    box-shadow: 2px 2px 0 rgba(0,0,0,.08);
+  }
+
+  .industry-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+  }
+  .industry-card {
+    border: 3px solid var(--border);
+    padding: 0.75rem 1rem;
+    text-decoration: none;
+    color: var(--ink);
+    background: #fff;
+    transition: all .12s;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.3rem 0.6rem;
+    cursor: pointer;
+  }
+  .industry-card:hover {
+    border-color: var(--accent2);
+    transform: translate(-1px, -1px);
+  }
+  .ind-name {
+    font-weight: 700;
+    font-size: 0.8rem;
+  }
+  .ind-meta {
+    font-size: 0.65rem;
+    color: var(--muted);
+    flex: 1;
+    min-width: 100px;
+  }
+  .ind-badge {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.5rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 0.15rem 0.4rem;
+    border: 2px solid var(--accent2);
+    color: var(--accent2);
+    margin-left: auto;
+  }
+
+  .topic-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .topic-card {
+    border: 3px solid var(--border);
+    padding: 1rem;
+    text-decoration: none;
+    color: var(--ink);
+    background: #fff;
+    transition: all .12s;
+    display: block;
+  }
+  .topic-card:hover {
+    border-color: var(--accent2);
+    transform: translate(-1px, -1px);
+  }
+  .topic-name {
+    font-weight: 700;
+    font-size: 0.9rem;
+    margin-bottom: 0.2rem;
+  }
+  .topic-desc {
+    font-size: 0.75rem;
+    color: var(--muted);
+    line-height: 1.4;
+  }
+
+  @media (max-width: 900px) {
+    .industry-grid { grid-template-columns: 1fr; }
+    .node-grid { gap: 0.4rem; }
+  }
+
+  /* 回到顶部 */
+  .back-to-top {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    width: 44px;
+    height: 44px;
+    border: 3px solid var(--ink);
+    background: #fff;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    font-weight: 900;
+    color: var(--ink);
+    z-index: 999;
+    transition: all .12s;
+  }
+  .back-to-top:hover { background: var(--ink); color: #fff; }
+  .back-to-top.visible { display: flex; }
+{% endblock %}
+
+{% block content %}
+<!-- PAGE HEADER -->
+<div class="kb-header">
+  <div class="kb-breadcrumb"><a href="{{ url_for('index') }}">首页</a> / 知识库</div>
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;">
+    <h1>知识库</h1>
+    <a href="{{ url_for('knowledge_base_export') }}" class="export-btn" title="一键导出全部概念卡片为 Markdown 文件">&#x21E9; 一键下载 md</a>
+  </div>
+</div>
+
+<!-- DESCRIPTION AREA -->
+<section class="kb-desc">
+  <div class="section-label">关于这套知识体系</div>
+  <div class="kb-desc-placeholder">
+    从 9,000 多条帖子和 120 篇专栏中，用 AI 提炼出三层知识结构。左边是理论框架（核心概念），中间是落地实践（产业标的），右边是深度整理（专题）。每张卡片都标注了来源帖子，可以追溯原文。
+  </div>
+</section>
+
+<!-- 三列布局 -->
+<div class="kb-columns">
+
+  <!-- 核心概念 -->
+  <section class="kb-col" style="flex:1">
+    <div class="section-label">核心概念</div>
+    <div class="kb-col-desc">43 张概念卡片，9 个节点，3 层穿透</div>
+
+    <div class="layer-group">
+      <div class="layer-header">
+        <span class="layer-dot" style="background:var(--accent)"></span>
+        根本决定层
+      </div>
+      <div class="node-grid">
+        <a href="{{ url_for('node_page', node_id='guoyun') }}" class="node-card" data-sub="国运">国运</a>
+        <a href="{{ url_for('node_page', node_id='huobi') }}" class="node-card" data-sub="汇率 · 美元体系 · 人民币体系 · 利率 · 通胀/通缩 · 债务">货币与信用周期</a>
+        <a href="{{ url_for('node_page', node_id='renxing') }}" class="node-card" data-sub="贪婪与恐惧 · 假象 · 信心">人性与行为周期</a>
+      </div>
+    </div>
+
+    <div class="layer-group">
+      <div class="layer-header">
+        <span class="layer-dot" style="background:var(--accent2)"></span>
+        核心驱动层
+      </div>
+      <div class="node-grid">
+        <a href="{{ url_for('node_page', node_id='jzgg') }}" class="node-card" data-sub="比较优势 · 安全 · 国际博弈">竞争格局</a>
+        <a href="{{ url_for('node_page', node_id='ldx') }}" class="node-card" data-sub="宏观流动性 · 中观流动性 · 微观流动性 · 流动性溢价">流动性</a>
+        <a href="{{ url_for('node_page', node_id='fxtx') }}" class="node-card" data-sub="亏钱效应 · 泡沫 · 危机 · 做空">风险体系</a>
+        <a href="{{ url_for('node_page', node_id='sccyz') }}" class="node-card" data-sub="游资 · 量化 · 散户 · 机构">市场参与者</a>
+      </div>
+    </div>
+
+    <div class="layer-group">
+      <div class="layer-header">
+        <span class="layer-dot" style="background:var(--accent3)"></span>
+        可观测表层
+      </div>
+      <div class="node-grid">
+        <a href="{{ url_for('node_page', node_id='qingxu') }}" class="node-card" data-sub="挣钱效应 · 情绪标 · 情绪位置变化 · 情绪周期 · 交易行为 · 对冲">情绪交易体系</a>
+        <a href="{{ url_for('node_page', node_id='sanyao') }}" class="node-card" data-sub="三要素联动">三要素联动</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- 产业标的 -->
+  <section class="kb-col" style="flex:1">
+    <div class="section-label">产业标的</div>
+    <div class="kb-col-desc">冰美体系的实践落地 —— 钱往哪投、怎么投。2方法论 + 2全球对标 + 8产业父卡 + 20个股子卡 = 32张卡片。</div>
+    <div class="industry-grid">
+      <a href="{{ url_for('industry_page', industry_id='fangfalun') }}" class="industry-card">
+        <div class="ind-name">产业方法论</div>
+        <div class="ind-meta">四阶段划分 · 四类资金分配方向</div>
+      </a>
+      <a href="{{ url_for('industry_page', industry_id='duibiao') }}" class="industry-card">
+        <div class="ind-name">全球对标体系</div>
+        <div class="ind-meta">美股映射 · 日韩半导体映射</div>
+      </a>
+      <a href="{{ url_for('industry_page', industry_id='qiche') }}" class="industry-card">
+        <div class="ind-name">汽车产业链</div>
+        <div class="ind-meta">比亚迪 · 赛力斯 · 宁德时代 · 江淮汽车</div>
+      </a>
+      <a href="{{ url_for('industry_page', industry_id='youse') }}" class="industry-card">
+        <div class="ind-name">有色与资源</div>
+        <div class="ind-meta">紫金矿业 · 西部矿业 · 黄金 · 白银 · 石油</div>
+      </a>
+      <a href="{{ url_for('industry_page', industry_id='huagong') }}" class="industry-card">
+        <div class="ind-name">化工</div>
+        <div class="ind-meta">万华化学</div>
+      </a>
+      <a href="{{ url_for('industry_page', industry_id='ai') }}" class="industry-card">
+        <div class="ind-name">AI 与人工智能</div>
+        <div class="ind-meta">中际旭创</div>
+      </a>
+      <a href="{{ url_for('industry_page', industry_id='bandaoti') }}" class="industry-card">
+        <div class="ind-name">半导体与芯片</div>
+        <div class="ind-meta">中芯国际 · 长电科技</div>
+      </a>
+      <a href="{{ url_for('industry_page', industry_id='hangtian') }}" class="industry-card">
+        <div class="ind-name">商业航天与卫星</div>
+        <div class="ind-meta">中国卫通 · 信维通信</div>
+      </a>
+      <a href="{{ url_for('industry_page', industry_id='jinke') }}" class="industry-card">
+        <div class="ind-name">金融科技</div>
+        <div class="ind-meta">比特币</div>
+      </a>
+      <a href="{{ url_for('industry_page', industry_id='qita') }}" class="industry-card">
+        <div class="ind-name">其他产业</div>
+        <div class="ind-meta">隆基绿能 · 柳工</div>
+      </a>
+    </div>
+  </section>
+
+  <!-- 专题整理 -->
+  <section class="kb-col" style="flex:1">
+    <div class="section-label">专题整理</div>
+    <div class="kb-col-desc">本站作者的输出工作成果，从冰美体系延伸的整理研究</div>
+    <div class="topic-list">
+      {% for t in topics %}
+      <a href="{{ url_for('topic_page', topic_id=t.id) }}" class="topic-card">
+        <div class="topic-name">{{ t.name }}</div>
+        <div class="topic-desc">{% if t.desc %}{{ t.desc }}{% endif %}{% if t.card_count %} — {{ t.card_count }} 张卡{% endif %}</div>
+      </a>
+      {% endfor %}
+    </div>
+  </section>
+</div>
+
+<div class="back-to-top" id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="回到顶部">&uarr;</div>
+<script>
+(function() {
+  var btn = document.getElementById('backToTop');
+  window.addEventListener('scroll', function() {
+    btn.classList.toggle('visible', window.scrollY > 400);
+  });
+})();
+</script>
+{% endblock %}

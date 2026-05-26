@@ -1,0 +1,537 @@
+{% extends "base.html" %}
+
+{% block title %}看看帖子 · 冰冰小美知识库{% endblock %}
+
+{% block extra_css %}
+  .posts-hero {
+    margin-bottom: 1rem;
+  }
+  .posts-hero .label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.25rem;
+  }
+  .posts-hero h1 {
+    font-weight: 900;
+    font-size: clamp(1.8rem, 3.5vw, 2.5rem);
+    line-height: 1.1;
+  }
+  /* 两个入口大卡片 */
+  .entry-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+  .entry-card {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    border: 3px solid var(--border);
+    padding: 1rem 1.25rem;
+    background: #fff;
+    transition: all .15s;
+  }
+  .entry-card:hover {
+    border-color: var(--accent);
+    transform: translate(-1px, -1px);
+    box-shadow: 2px 2px 0 rgba(0,0,0,.08);
+  }
+  .entry-card .ec-icon {
+    font-size: 1.3rem;
+    margin-bottom: 0.35rem;
+  }
+  .entry-card h3 {
+    font-weight: 900;
+    font-size: 1rem;
+    margin-bottom: 0.25rem;
+  }
+  .entry-card p {
+    font-size: 0.7rem;
+    color: var(--muted);
+    line-height: 1.45;
+  }
+  .entry-card .ec-stat {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.5rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    margin-top: 0.35rem;
+  }
+
+  /* 搜索栏 */
+  .search-bar-wrap {
+    display: flex;
+    gap: 0;
+    margin-bottom: 0.5rem;
+    border: 3px solid var(--border);
+    background: #fff;
+  }
+  .search-bar-wrap:focus-within { border-color: var(--accent); }
+  .search-input {
+    flex: 1;
+    border: none;
+    padding: 0.7rem 1rem;
+    font-family: 'Noto Sans SC', sans-serif;
+    font-size: 0.85rem;
+    outline: none;
+    background: transparent;
+    color: var(--ink);
+  }
+  .search-input::placeholder { color: #aaa; font-style: italic; }
+  .search-btn {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 0.7rem 1.25rem;
+    border: none;
+    background: var(--ink);
+    color: #fff;
+    cursor: pointer;
+    font-weight: 700;
+    transition: opacity .12s;
+  }
+  .search-btn:hover { opacity: 0.8; }
+
+  /* 高频词汇 — 可伸缩 */
+  .freq-bar-wrap {
+    margin-bottom: 1.25rem;
+  }
+  .freq-bar-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.45rem 0.75rem;
+    background: #fff;
+    border: 2px solid var(--border);
+    cursor: pointer;
+    user-select: none;
+    transition: all .12s;
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+  .freq-bar-header:hover { border-color: var(--accent); }
+  .freq-bar-header .fb-arrow {
+    font-size: 0.5rem;
+    color: var(--muted);
+    transition: transform .2s;
+    flex-shrink: 0;
+  }
+  .freq-bar-wrap.open .fb-arrow { transform: rotate(90deg); }
+  .freq-bar-header .fb-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.55rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .freq-bar-header .fb-hint {
+    font-size: 0.6rem;
+    color: #aaa;
+    margin-left: auto;
+  }
+  .freq-bar-body {
+    display: none;
+    padding: 0.75rem;
+    background: #fff;
+    border: 2px solid var(--border);
+    border-top: none;
+  }
+  .freq-bar-wrap.open .freq-bar-body { display: block; }
+  .freq-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0.2rem 0.4rem;
+  }
+  .freq-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.72rem;
+    border-bottom: 1px solid rgba(0,0,0,.05);
+  }
+  .freq-item .f-name { font-weight: 600; flex-shrink: 0; }
+  .freq-item .f-name a {
+    color: inherit;
+    text-decoration: none;
+    transition: all .12s;
+  }
+  .freq-item .f-name a:hover { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
+  .freq-item .f-count {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.55rem;
+    color: var(--muted);
+    flex-shrink: 0;
+  }
+  .freq-bar {
+    flex: 1;
+    height: 2px;
+    background: rgba(0,0,0,.06);
+    margin: 0 0.3rem;
+  }
+  .freq-bar-inner {
+    height: 100%;
+    background: var(--accent);
+    opacity: 0.2;
+  }
+
+  /* Tab 切换 — 全部/重点 */
+  .tl-tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 4px solid var(--border);
+    margin-bottom: 1rem;
+  }
+  .tl-tab {
+    padding: 0.55rem 1.5rem;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border: none;
+    background: none;
+    color: var(--muted);
+    font-weight: 700;
+    transition: all .12s;
+    border-bottom: 4px solid transparent;
+    margin-bottom: -4px;
+  }
+  .tl-tab:hover { color: var(--ink); }
+  .tl-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tl-tab .tt-count {
+    font-size: 0.5rem;
+    opacity: 0.55;
+    margin-left: 0.3rem;
+  }
+
+  /* 帖子流 — 刷帖感的列表 */
+  .post-feed {}
+  .post-item {
+    display: block;
+    text-decoration: none;
+    color: var(--ink);
+    padding: 0.85rem 0;
+    border-bottom: 1px solid rgba(0,0,0,.07);
+    transition: background .1s;
+  }
+  .post-item:hover { background: rgba(0,0,0,.015); }
+  .post-item .pi-header {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    margin-bottom: 0.3rem;
+  }
+  .post-item .pi-date {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.55rem;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .post-item .pi-title {
+    font-size: 0.88rem;
+    font-weight: 700;
+    flex: 1;
+    line-height: 1.35;
+  }
+  .post-item .pi-tags {
+    display: flex;
+    gap: 0.25rem;
+    flex-shrink: 0;
+  }
+  .post-item .pi-tag {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.4rem;
+    letter-spacing: 0.08em;
+    padding: 0.1rem 0.35rem;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .post-item .pi-snippet {
+    font-size: 0.78rem;
+    color: #555;
+    line-height: 1.6;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .post-item .pi-snippet br { display: none; }
+
+  .tl-loading {
+    text-align: center;
+    padding: 2rem;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--muted);
+    letter-spacing: 0.15em;
+  }
+  .tl-end {
+    text-align: center;
+    padding: 2rem;
+    font-size: 0.7rem;
+    color: #aaa;
+    border-top: 2px solid var(--border);
+  }
+
+  @media (max-width: 900px) {
+    .freq-grid { grid-template-columns: repeat(3, 1fr); }
+    .post-item .pi-header { flex-wrap: wrap; }
+  }
+  @media (max-width: 500px) {
+    .freq-grid { grid-template-columns: 1fr; }
+  }
+
+  /* 回到顶部 */
+  .back-to-top {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    width: 44px;
+    height: 44px;
+    border: 3px solid var(--ink);
+    background: #fff;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    font-weight: 900;
+    color: var(--ink);
+    z-index: 999;
+    transition: all .12s;
+  }
+  .back-to-top:hover { background: var(--ink); color: #fff; }
+  .back-to-top.visible { display: flex; }
+{% endblock %}
+
+{% block content %}
+<!-- HERO -->
+<section class="posts-hero">
+  <div class="label">冰冰小美 · {{ total_posts }} 条帖子</div>
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;">
+    <h1>看看帖子</h1>
+  </div>
+</section>
+
+<!-- 两个入口大卡片 -->
+<div class="entry-cards">
+  <a href="{{ url_for('posts_core') }}" class="entry-card">
+    <div class="ec-icon">&#x25C9;</div>
+    <h3>看看重点</h3>
+    <p>核心文章目录，按来源分 5 组。置顶帖 · 专栏文章 · 交易体系 · 三要素案例 · 深度帖子。每组可伸缩浏览。</p>
+    <div class="ec-stat">{{ total_core }} 篇核心文章</div>
+  </a>
+  <a href="{{ url_for('posts_random') }}" class="entry-card">
+    <div class="ec-icon">&#x2666;</div>
+    <h3>随便看看</h3>
+    <p>从 {{ total_core }} 篇核心文章中随机抽取一篇。像翻牌一样，每次刷新都不知道下一篇会是什么。</p>
+    <div class="ec-stat">随机 · 惊喜</div>
+  </a>
+</div>
+
+<!-- 搜索栏 -->
+<form class="search-bar-wrap" method="get" action="{{ url_for('posts_landing') }}">
+  <input class="search-input" type="text" name="q" value="{{ search_query or '' }}" placeholder="输入关键词搜索帖子...">
+  <button class="search-btn" type="submit">搜索</button>
+</form>
+
+<div style="font-size:0.6rem;color:var(--muted);margin-bottom:0.25rem;">建议在雪球看原贴，本站仅做索引和检索</div>
+
+{% if search_query %}
+<div style="margin-bottom:0.75rem;">
+  <a href="{{ url_for('posts_landing') }}" class="sub-link">搜索: {{ search_query }} &#x2715;</a>
+  <span style="font-family:'Space Mono',monospace;font-size:0.55rem;color:var(--muted);margin-left:0.5rem;">共 {{ first_page_all.total }} 条结果</span>
+</div>
+{% endif %}
+
+<!-- 高频词汇 — 可伸缩 -->
+<div class="freq-bar-wrap" id="freqBar">
+  <div class="freq-bar-header" onclick="document.getElementById('freqBar').classList.toggle('open')">
+    <span class="fb-arrow">&#x25B6;</span>
+    <span class="fb-label">高频词汇</span>
+    <span style="font-size:0.6rem;color:var(--muted);">{{ all_freq|length if all_freq else 0 }} 个概念</span>
+    <span class="fb-hint">点击词汇搜索帖子</span>
+  </div>
+  <div class="freq-bar-body">
+    {% if top_freq %}
+    {% set max_f = top_freq[0].freq if top_freq[0].freq > 0 else 1 %}
+    <div class="freq-grid">
+      {% for item in all_freq[:30] %}
+      <div class="freq-item">
+        <span class="f-name"><a href="{{ url_for('posts_landing') }}?q={{ item.name | urlencode }}">{{ item.name }}</a></span>
+        <span class="freq-bar"><span class="freq-bar-inner" style="width:{{ (item.freq / max_f * 100)|int }}%"></span></span>
+        <span class="f-count">{{ item.freq }}</span>
+      </div>
+      {% endfor %}
+    </div>
+    {% if all_freq|length > 30 %}
+    <div style="margin-top:0.5rem;display:none;" id="freqMore">
+      <div class="freq-grid">
+        {% for item in all_freq %}
+        {% if loop.index > 30 %}
+        <div class="freq-item">
+          <span class="f-name"><a href="{{ url_for('posts_landing') }}?q={{ item.name | urlencode }}">{{ item.name }}</a></span>
+          <span class="freq-bar"><span class="freq-bar-inner" style="width:{{ (item.freq / max_f * 100)|int }}%"></span></span>
+          <span class="f-count">{{ item.freq }}</span>
+        </div>
+        {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+    <div style="margin-top:0.5rem;">
+      <span class="sub-link" onclick="var el=document.getElementById('freqMore'); var t=this; el.style.display=el.style.display==='none'?'block':'none'; t.textContent=el.style.display==='none'?'收起 ▲':'展开全部 {{ all_freq|length }} 个 ▼';" style="cursor:pointer;">展开全部 {{ all_freq|length }} 个 ▼</span>
+    </div>
+    {% endif %}
+    {% else %}
+    <p style="color:var(--muted);font-style:italic;font-size:0.75rem;">词频数据加载中...</p>
+    {% endif %}
+  </div>
+</div>
+
+<!-- 时间线阅读 -->
+<div class="tl-tabs">
+  <button class="tl-tab active" data-tab="all" onclick="switchFeedTab('all')">全部帖子<span class="tt-count">{{ first_page_all.total }}</span></button>
+  <button class="tl-tab" data-tab="key" onclick="switchFeedTab('key')">重点帖子<span class="tt-count">{{ first_page_key.total }}</span></button>
+</div>
+
+<div class="post-feed" id="postList">
+  {% for item in first_page_all['items'] %}
+  <a href="{{ url_for('posts_read', path=item.filepath) }}" class="post-item" data-feed="all">
+    <div class="pi-header">
+      <span class="pi-date">{{ item.date[:10] if item.date else '' }}</span>
+      <span class="pi-title">{{ item.title }}</span>
+      {% if item.tags %}
+      <span class="pi-tags">
+        {% for tag in item.tags[:2] %}
+        <span class="pi-tag">{{ tag }}</span>
+        {% endfor %}
+      </span>
+      {% endif %}
+    </div>
+    {% if item.snippet %}
+    <div class="pi-snippet">{{ item.snippet | safe }}</div>
+    {% endif %}
+  </a>
+  {% endfor %}
+  {% for item in first_page_key['items'] %}
+  <a href="{{ url_for('posts_read', path=item.filepath) }}" class="post-item" data-feed="key" style="display:none;">
+    <div class="pi-header">
+      <span class="pi-date">{{ item.date[:10] if item.date else '' }}</span>
+      <span class="pi-title">{{ item.title }}</span>
+      {% if item.tags %}
+      <span class="pi-tags">
+        {% for tag in item.tags[:2] %}
+        <span class="pi-tag">{{ tag }}</span>
+        {% endfor %}
+      </span>
+      {% endif %}
+    </div>
+    {% if item.snippet %}
+    <div class="pi-snippet">{{ item.snippet | safe }}</div>
+    {% endif %}
+  </a>
+  {% endfor %}
+</div>
+<div class="tl-loading" id="tlLoading" style="display:none;">加载中...</div>
+<div class="tl-end" id="tlEnd" style="display:none;">—— 已经到底了 ——</div>
+
+<div class="back-to-top" id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="回到顶部">&uarr;</div>
+<script>
+(function() {
+  var btn = document.getElementById('backToTop');
+  window.addEventListener('scroll', function() {
+    btn.classList.toggle('visible', window.scrollY > 400);
+  });
+})();
+</script>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// === 时间线 — Feed Tab ===
+var apiBase = window.location.hostname === 'localhost' ? '' : 'https://api.bbxmkb.cn';
+var feedTab = 'all';
+var feedPage = {all: 1, key: 1};
+var hasMore = {all: {{ 'true' if first_page_all.has_more else 'false' }}, key: {{ 'true' if first_page_key.has_more else 'false' }}};
+var loading = false;
+
+function switchFeedTab(tab) {
+  feedTab = tab;
+  document.querySelectorAll('.tl-tab').forEach(function(t) {
+    t.classList.toggle('active', t.getAttribute('data-tab') === tab);
+  });
+  document.querySelectorAll('.post-item').forEach(function(item) {
+    item.style.display = item.getAttribute('data-feed') === tab ? '' : 'none';
+  });
+  document.getElementById('tlEnd').style.display = hasMore[tab] ? 'none' : '';
+}
+
+// === 无限滚动 ===
+window.addEventListener('scroll', function() {
+  if (loading || !hasMore[feedTab]) return;
+  var list = document.getElementById('postList');
+  var rect = list.getBoundingClientRect();
+  if (rect.bottom < window.innerHeight + 800) {
+    loadMore();
+  }
+});
+
+function loadMore() {
+  loading = true;
+  feedPage[feedTab]++;
+  document.getElementById('tlLoading').style.display = '';
+
+  var searchQ = {{ ('\'' + search_query + '\'') | tojson if search_query else 'null' }};
+  var url = apiBase + '/api/posts/page/' + feedPage[feedTab] + '?filter=' + feedTab;
+  if (searchQ) url += '&q=' + encodeURIComponent(searchQ);
+
+  fetch(url)
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      document.getElementById('tlLoading').style.display = 'none';
+      if (!data['items'] || data['items'].length === 0) {
+        hasMore[feedTab] = false;
+        document.getElementById('tlEnd').style.display = '';
+        return;
+      }
+      hasMore[feedTab] = data.has_more;
+      var html = '';
+      data['items'].forEach(function(item) {
+        var tagsHtml = '';
+        if (item.tags && item.tags.length) {
+          tagsHtml = '<span class="pi-tags">' + item.tags.slice(0,2).map(function(t) {
+            return '<span class="pi-tag">' + t + '</span>';
+          }).join('') + '</span>';
+        }
+        var snippetHtml = '';
+        if (item.snippet) {
+          snippetHtml = '<div class="pi-snippet">' + item.snippet + '</div>';
+        }
+        var date = item.date ? item.date.substring(0, 10) : '';
+        html += '<a href="/posts/read?path=' + encodeURIComponent(item.filepath) + '" class="post-item" data-feed="' + feedTab + '">' +
+          '<div class="pi-header"><span class="pi-date">' + date + '</span><span class="pi-title">' + item.title + '</span>' + tagsHtml + '</div>' +
+          snippetHtml + '</a>';
+      });
+      document.getElementById('postList').insertAdjacentHTML('beforeend', html);
+      if (!hasMore[feedTab]) {
+        document.getElementById('tlEnd').style.display = '';
+      }
+    })
+    .catch(function() {
+      document.getElementById('tlLoading').style.display = 'none';
+    })
+    .finally(function() {
+      loading = false;
+    });
+}
+</script>
+{% endblock %}

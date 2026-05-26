@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>板块热度追踪器</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{
+    --bg:#f5f0e8;--card:#fff;--border:#1a1a1a;--bl:#e8e3db;
+    --t1:#1a1a1a;--t2:#3a3a3a;--t3:#7a7a7a;
+    --red:#e63946;--green:#2d6a4f;--blue:#1d3557;
+    --heat5:#e63946;--heat4:#f4a261;--heat3:#7a7a7a;--heat2:#3a7ca5;--heat1:#1d3557;
+  }
+  body{
+    font-family:'Space Grotesk','Noto Sans SC',system-ui,sans-serif;
+    background:var(--bg);color:var(--t1);
+    font-size:14px;line-height:1.7;
+    -webkit-font-smoothing:antialiased;
+  }
+  .page{max-width:1100px;margin:0 auto;padding:24px 20px 48px}
+
+  .header{
+    border:3px solid var(--t1);padding:24px 28px;margin-bottom:20px;
+    display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;
+  }
+  .h-title{font-size:36px;font-weight:700;letter-spacing:-2px;line-height:1}
+  .h-sub{font-size:11px;color:var(--t3);font-family:'JetBrains Mono',monospace}
+  .h-code{font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--t1);color:var(--bg);padding:4px 8px;display:inline-block;margin-top:4px}
+
+  /* 搜索 */
+  .search-row{display:flex;gap:8px;margin-bottom:20px}
+  .search-input{
+    flex:1;padding:10px 14px;
+    border:3px solid var(--t1);background:var(--card);
+    font-size:14px;font-family:'Noto Sans SC',sans-serif;outline:none;
+  }
+  .search-input:focus{background:#fff;border-color:var(--blue)}
+  .search-input::placeholder{color:var(--t3)}
+  .search-btn{
+    padding:10px 20px;background:var(--t1);color:var(--bg);
+    border:3px solid var(--t1);font-size:12px;font-weight:700;
+    font-family:'JetBrains Mono',monospace;cursor:pointer;
+  }
+  .search-btn:hover{background:var(--blue);border-color:var(--blue)}
+  .search-results{
+    display:none;margin-bottom:20px;border:2px solid var(--bl);max-height:240px;overflow-y:auto;background:var(--card);
+  }
+  .search-results.show{display:block}
+  .sr-item{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:8px 14px;border-bottom:1px solid var(--bl);cursor:pointer;
+    font-size:12px;font-family:'JetBrains Mono',monospace;
+  }
+  .sr-item:last-child{border-bottom:none}
+  .sr-item:hover{background:var(--bl)}
+  .sr-name{font-weight:600}
+  .sr-meta{color:var(--t3);font-size:10px}
+  .sr-add{
+    padding:3px 10px;background:var(--green);color:#fff;border:0;
+    font-size:10px;font-weight:700;font-family:'JetBrains Mono',monospace;cursor:pointer;
+  }
+  .sr-add:hover{background:var(--t1)}
+  .sr-added{color:var(--t3);font-size:10px}
+
+  /* 表格 */
+  .table-wrap{border:3px solid var(--t1);background:var(--card);overflow-x:auto}
+  table{width:100%;border-collapse:collapse;font-size:12px}
+  th{text-align:left;padding:10px 8px;color:var(--bg);font-weight:700;font-size:10px;background:var(--t1);font-family:'JetBrains Mono',monospace;white-space:nowrap;position:sticky;top:0}
+  td{padding:8px;border-bottom:2px solid var(--bl);font-family:'JetBrains Mono',monospace;white-space:nowrap}
+  tr:hover td{background:rgba(0,0,0,0.02)}
+  .r{text-align:right}
+  .up{color:var(--red)}.dn{color:var(--green)}
+
+  .heat5{color:var(--heat5)}.heat4{color:var(--heat4)}.heat3{color:var(--heat3)}.heat2{color:var(--heat2)}.heat1{color:var(--heat1)}
+
+  .remove-btn{
+    width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;
+    background:transparent;border:1px solid var(--bl);color:var(--t3);
+    font-size:12px;cursor:pointer;font-family:'JetBrains Mono',monospace;
+    opacity:0.4;transition:opacity .2s;
+  }
+  .remove-btn:hover{opacity:1;background:var(--red);border-color:var(--red);color:#fff}
+
+  .footer{text-align:center;color:var(--t3);font-size:10px;padding:20px 0 8px;font-family:'JetBrains Mono',monospace;border-top:3px solid var(--t1);margin-top:20px}
+
+  @media(max-width:768px){
+    .page{padding:12px 12px 24px}
+    .h-title{font-size:24px}
+    .header{flex-direction:column;text-align:left;padding:16px}
+    td,th{padding:6px 5px;font-size:11px}
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+<header class="header">
+  <div>
+    <div class="h-title">板块热度追踪</div>
+    <div class="h-sub">基于冰冰小美三要素框架 · 5 级情绪体系</div>
+  </div>
+  <div style="text-align:right">
+    <div class="h-sub" id="sector-count">—</div>
+    <div class="h-code" id="week-label">WEEK :: —</div>
+  </div>
+</header>
+
+<div class="search-row">
+  <input type="text" class="search-input" id="searchInput" placeholder="搜索板块，如：存储、光通信、创新药、军工...">
+  <button class="search-btn" onclick="doSearch()">SEARCH</button>
+</div>
+<div class="search-results" id="searchResults"></div>
+
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>板块</th>
+        <th>类别</th>
+        <th class="r">周涨跌</th>
+        <th class="r">成交变化</th>
+        <th class="r">成交量</th>
+        <th class="r">成交额</th>
+        <th class="r">连涨天</th>
+        <th class="r">波动</th>
+        <th class="r">情绪</th>
+        <th>情绪标 (5日)</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody id="dataTable"></tbody>
+  </table>
+</div>
+
+<div class="footer">
+  数据来源：Tushare Pro · 申万二级行业 + 概念板块　｜　情绪体系：[5]燃烧 [4]发热 [3]常温 [2]退潮 [1]冰点　｜　仅供研究参考
+</div>
+
+</div>
+
+<script>
+const SECTOR_DB = [
+  {code:"801081.SI",name:"半导体",type:"sw",source:"申万二级"},
+  {code:"801738.SI",name:"电网设备",type:"sw",source:"申万二级"},
+  {code:"801735.SI",name:"光伏设备",type:"sw",source:"申万二级"},
+  {code:"801737.SI",name:"电池",type:"sw",source:"申万二级"},
+  {code:"801102.SI",name:"通信设备",type:"sw",source:"申万二级"},
+  {code:"801078.SI",name:"自动化设备",type:"sw",source:"申万二级"},
+  {code:"801104.SI",name:"软件开发",type:"sw",source:"申万二级"},
+  {code:"801084.SI",name:"光学光电子",type:"sw",source:"申万二级"},
+  {code:"801085.SI",name:"消费电子",type:"sw",source:"申万二级"},
+  {code:"801086.SI",name:"电子化学品Ⅱ",type:"sw",source:"申万二级"},
+  {code:"801093.SI",name:"汽车零部件",type:"sw",source:"申万二级"},
+  {code:"801111.SI",name:"白色家电",type:"sw",source:"申万二级"},
+  {code:"801125.SI",name:"白酒Ⅱ",type:"sw",source:"申万二级"},
+  {code:"801151.SI",name:"化学制药",type:"sw",source:"申万二级"},
+  {code:"801152.SI",name:"生物制品",type:"sw",source:"申万二级"},
+  {code:"801153.SI",name:"医疗器械",type:"sw",source:"申万二级"},
+  {code:"801156.SI",name:"医疗服务",type:"sw",source:"申万二级"},
+  {code:"801161.SI",name:"电力",type:"sw",source:"申万二级"},
+  {code:"801193.SI",name:"证券Ⅱ",type:"sw",source:"申万二级"},
+  {code:"801194.SI",name:"保险Ⅱ",type:"sw",source:"申万二级"},
+  {code:"801713.SI",name:"装修建材",type:"sw",source:"申万二级"},
+  {code:"801736.SI",name:"风电设备",type:"sw",source:"申万二级"},
+  {code:"801741.SI",name:"航天装备Ⅱ",type:"sw",source:"申万二级"},
+  {code:"801742.SI",name:"航空装备Ⅱ",type:"sw",source:"申万二级"},
+  {code:"801745.SI",name:"军工电子Ⅱ",type:"sw",source:"申万二级"},
+  {code:"801764.SI",name:"游戏Ⅱ",type:"sw",source:"申万二级"},
+  {code:"801782.SI",name:"国有大型银行Ⅱ",type:"sw",source:"申万二级"},
+  {code:"801077.SI",name:"工程机械",type:"sw",source:"申万二级"},
+  {code:"801951.SI",name:"煤炭开采",type:"sw",source:"申万二级"},
+  {code:"801101.SI",name:"计算机设备",type:"sw",source:"申万二级"},
+  {code:"TS572",name:"存储芯片",type:"concept",source:"概念板块"},
+  {code:"TS737",name:"储能",type:"concept",source:"概念板块"},
+  {code:"TS689",name:"创新药",type:"concept",source:"概念板块"},
+  {code:"TS475",name:"新能源",type:"concept",source:"概念板块"},
+  {code:"TS451",name:"智能电网",type:"concept",source:"概念板块"},
+  {code:"TS876",name:"AI芯片",type:"concept",source:"概念板块"},
+  {code:"TS709",name:"军工",type:"concept",source:"概念板块"},
+  {code:"TS223",name:"第三代半导体",type:"concept",source:"概念板块"},
+  {code:"TS732",name:"光伏概念",type:"concept",source:"概念板块"},
+  {code:"TS410",name:"氢能源",type:"concept",source:"概念板块"},
+  {code:"TS25",name:"风电",type:"concept",source:"概念板块"},
+  {code:"TS424",name:"核电",type:"concept",source:"概念板块"},
+  {code:"TS733",name:"充电桩",type:"concept",source:"概念板块"},
+  {code:"TS453",name:"智能汽车",type:"concept",source:"概念板块"},
+  {code:"TS298",name:"生物医药",type:"concept",source:"概念板块"},
+  {code:"TS785",name:"云计算",type:"concept",source:"概念板块"},
+  {code:"TS488",name:"数据中心",type:"concept",source:"概念板块"},
+  {code:"TS487",name:"数据存储",type:"concept",source:"概念板块"},
+  {code:"TS363",name:"消费电子",type:"concept",source:"概念板块"},
+  {code:"TS628",name:"固态电池",type:"concept",source:"概念板块"},
+  {code:"TS442",name:"服务机器人",type:"concept",source:"概念板块"},
+  {code:"TS543",name:"工业机器人",type:"concept",source:"概念板块"},
+  {code:"TS267",name:"白酒概念",type:"concept",source:"概念板块"},
+  {code:"TS332",name:"煤炭概念",type:"concept",source:"概念板块"},
+  {code:"TS172",name:"航天军工",type:"concept",source:"概念板块"},
+];
+
+const HEAT_NAMES = {5:"燃烧",4:"发热",3:"常温",2:"退潮",1:"冰点"};
+const HEAT_CSS = {5:"heat5",4:"heat4",3:"heat3",2:"heat2",1:"heat1"};
+
+function loadSectors() {
+  const saved = localStorage.getItem('sector_tracker_sectors');
+  return saved ? JSON.parse(saved) : null;
+}
+function saveSectors(sectors) {
+  localStorage.setItem('sector_tracker_sectors', JSON.stringify(sectors));
+}
+
+const DEFAULT_SECTORS = [
+  {code:"801081.SI",name:"半导体",type:"sw",category:"硬科技"},
+  {code:"801738.SI",name:"电网设备",type:"sw",category:"新基建"},
+  {code:"801735.SI",name:"光伏设备",type:"sw",category:"新能源"},
+  {code:"801737.SI",name:"电池",type:"sw",category:"新能源"},
+  {code:"801102.SI",name:"通信设备",type:"sw",category:"数字经济"},
+  {code:"801078.SI",name:"自动化设备",type:"sw",category:"智能制造"},
+  {code:"801104.SI",name:"软件开发",type:"sw",category:"数字经济"},
+  {code:"TS572",name:"存储芯片",type:"concept",category:"硬科技"},
+  {code:"TS737",name:"储能",type:"concept",category:"新能源"},
+  {code:"TS689",name:"创新药",type:"concept",category:"医药"},
+  {code:"TS475",name:"新能源",type:"concept",category:"新能源"},
+  {code:"TS451",name:"智能电网",type:"concept",category:"新基建"},
+  {code:"TS876",name:"AI芯片",type:"concept",category:"硬科技"},
+  {code:"TS709",name:"军工",type:"concept",category:"国防"},
+];
+
+let userSectors = loadSectors() || DEFAULT_SECTORS;
+
+// 搜索
+document.getElementById('searchInput').addEventListener('keydown', e => { if (e.key === 'Enter') doSearch(); });
+document.getElementById('searchInput').addEventListener('input', e => {
+  if (e.target.value.length >= 1) doSearch();
+  else document.getElementById('searchResults').classList.remove('show');
+});
+
+function doSearch() {
+  const kw = document.getElementById('searchInput').value.trim();
+  if (!kw) return;
+  const results = SECTOR_DB.filter(s =>
+    s.name.includes(kw) || s.code.includes(kw.toUpperCase())
+  ).slice(0, 15);
+  renderSearchResults(results);
+}
+
+function renderSearchResults(results) {
+  const container = document.getElementById('searchResults');
+  if (results.length === 0) {
+    container.innerHTML = '<div style="padding:12px;font-size:12px;color:var(--t3);font-family:JetBrains Mono,monospace">未找到匹配板块</div>';
+    container.classList.add('show');
+    return;
+  }
+  const tracked = new Set(userSectors.map(s => s.code));
+  container.innerHTML = results.map(r => {
+    const isTracked = tracked.has(r.code);
+    return `<div class="sr-item">
+      <div>
+        <span class="sr-name">${r.name}</span>
+        <span class="sr-meta">${r.code} · ${r.source}</span>
+      </div>
+      ${isTracked
+        ? '<span class="sr-added">已跟踪</span>'
+        : `<button class="sr-add" onclick="addSector('${r.code}','${r.name}','${r.type}')">+ 添加</button>`
+      }
+    </div>`;
+  }).join('');
+  container.classList.add('show');
+}
+
+function addSector(code, name, type) {
+  userSectors.push({code, name, type, category:"自定义"});
+  saveSectors(userSectors);
+  doSearch();
+  renderAll();
+}
+
+function removeSector(code) {
+  userSectors = userSectors.filter(s => s.code !== code);
+  saveSectors(userSectors);
+  renderAll();
+}
+
+// 格式化大数字
+// tushare vol 单位是手，amount 单位是千元
+function fmtNum(val, unit) {
+  if (!val || val === 0) return '—';
+  if (unit === 'vol') {
+    // 手 → 亿手
+    if (val >= 100000000) return (val / 100000000).toFixed(1) + '亿手';
+    // 手 → 万手
+    if (val >= 10000) return (val / 10000).toFixed(0) + '万手';
+    return val.toFixed(0) + '手';
+  }
+  if (unit === 'amt') {
+    // 千元 → 亿元（千元 / 100000 = 亿）
+    if (val >= 100000) return (val / 100000).toFixed(0) + '亿';
+    // 千元 → 万元
+    return (val / 10).toFixed(0) + '万';
+  }
+  return val;
+}
+
+let ALL_DATA = null;
+
+async function loadData() {
+  return new Promise(resolve => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', '../data/sector_tracking.json', true);
+    xhr.onreadystatechange = function() {
+      if (xhr.readyState === 4 && xhr.status === 200) {
+        try {
+          const json = JSON.parse(xhr.responseText);
+          const weekKey = Object.keys(json).sort().pop();
+          ALL_DATA = json[weekKey].results;
+          document.getElementById('week-label').textContent = `WEEK :: ${weekKey}`;
+          resolve();
+          return;
+        } catch(e) {}
+      }
+      if (xhr.readyState === 4) {
+        ALL_DATA = DEMO_DATA;
+        document.getElementById('week-label').textContent = 'WEEK :: 2026-W18';
+        resolve();
+      }
+    };
+    xhr.send();
+  });
+}
+
+const DEMO_DATA = [
+  {ts_code:"801081.SI",name:"半导体",type:"sw",category:"硬科技",sentiment:["中芯国际","北方华创"],sentiment_stocks:[{name:"中芯国际",change_5d:7.00},{name:"北方华创",change_5d:13.60}],heat:4,heat_name:"发热",weekly_change:8.0,amount_change_pct:2.0,consecutive_up:2,consecutive_down:0,volatility:10.8,volume:0,amount:0},
+  {ts_code:"801738.SI",name:"电网设备",type:"sw",category:"新基建",sentiment:["许继电气","平高电气"],sentiment_stocks:[{name:"许继电气",change_5d:-2.40},{name:"平高电气",change_5d:0.40}],heat:2,heat_name:"退潮",weekly_change:-2.1,amount_change_pct:-33.0,consecutive_up:0,consecutive_down:1,volatility:7.3,volume:0,amount:0},
+  {ts_code:"801735.SI",name:"光伏设备",type:"sw",category:"新能源",sentiment:["隆基绿能","阳光电源"],sentiment_stocks:[{name:"隆基绿能",change_5d:-5.30},{name:"阳光电源",change_5d:2.70}],heat:3,heat_name:"常温",weekly_change:1.6,amount_change_pct:-13.1,consecutive_up:2,consecutive_down:0,volatility:9.8,volume:0,amount:0},
+  {ts_code:"801737.SI",name:"电池",type:"sw",category:"新能源",sentiment:["宁德时代","亿纬锂能"],sentiment_stocks:[{name:"宁德时代",change_5d:-2.00},{name:"亿纬锂能",change_5d:-0.30}],heat:3,heat_name:"常温",weekly_change:1.9,amount_change_pct:-7.6,consecutive_up:0,consecutive_down:1,volatility:13.1,volume:0,amount:0},
+  {ts_code:"801102.SI",name:"通信设备",type:"sw",category:"数字经济",sentiment:["中兴通讯","烽火通信"],sentiment_stocks:[{name:"中兴通讯",change_5d:0.90},{name:"烽火通信",change_5d:-10.70}],heat:2,heat_name:"退潮",weekly_change:-2.3,amount_change_pct:-37.5,consecutive_up:0,consecutive_down:1,volatility:10.3,volume:0,amount:0},
+  {ts_code:"801078.SI",name:"自动化设备",type:"sw",category:"智能制造",sentiment:["汇川技术","埃斯顿"],sentiment_stocks:[{name:"汇川技术",change_5d:6.00},{name:"埃斯顿",change_5d:6.10}],heat:4,heat_name:"发热",weekly_change:3.6,amount_change_pct:-16.5,consecutive_up:2,consecutive_down:0,volatility:8.1,volume:0,amount:0},
+  {ts_code:"801104.SI",name:"软件开发",type:"sw",category:"数字经济",sentiment:["用友网络","金山办公"],sentiment_stocks:[{name:"用友网络",change_5d:-5.60},{name:"金山办公",change_5d:1.10}],heat:3,heat_name:"常温",weekly_change:-0.4,amount_change_pct:-19.3,consecutive_up:2,consecutive_down:0,volatility:5.7,volume:0,amount:0},
+  {ts_code:"TS572",name:"存储芯片",type:"concept",category:"硬科技",sentiment:["兆易创新","北京君正"],sentiment_stocks:[{name:"兆易创新",change_5d:5.10},{name:"北京君正",change_5d:3.70}],heat:4,heat_name:"发热",weekly_change:9.9,amount_change_pct:3.3,consecutive_up:2,consecutive_down:0,volatility:9.2,volume:0,amount:0},
+  {ts_code:"TS737",name:"储能",type:"concept",category:"新能源",sentiment:["派能科技","鹏辉能源"],sentiment_stocks:[{name:"派能科技",change_5d:1.90},{name:"鹏辉能源",change_5d:24.20}],heat:2,heat_name:"退潮",weekly_change:-1.3,amount_change_pct:-18.2,consecutive_up:0,consecutive_down:1,volatility:8.0,volume:0,amount:0},
+  {ts_code:"TS689",name:"创新药",type:"concept",category:"医药",sentiment:["恒瑞医药","信立泰"],sentiment_stocks:[{name:"恒瑞医药",change_5d:-3.90},{name:"信立泰",change_5d:-7.60}],heat:2,heat_name:"退潮",weekly_change:-1.0,amount_change_pct:1.9,consecutive_up:0,consecutive_down:2,volatility:4.7,volume:0,amount:0},
+  {ts_code:"TS475",name:"新能源",type:"concept",category:"新能源",sentiment:["比亚迪","赛力斯"],sentiment_stocks:[{name:"比亚迪",change_5d:3.50},{name:"赛力斯",change_5d:-2.30}],heat:2,heat_name:"退潮",weekly_change:-1.8,amount_change_pct:-14.7,consecutive_up:0,consecutive_down:1,volatility:9.7,volume:0,amount:0},
+  {ts_code:"TS451",name:"智能电网",type:"concept",category:"新基建",sentiment:["国电南瑞","思源电气"],sentiment_stocks:[{name:"国电南瑞",change_5d:-2.10},{name:"思源电气",change_5d:-12.20}],heat:3,heat_name:"常温",weekly_change:0.3,amount_change_pct:-19.3,consecutive_up:0,consecutive_down:1,volatility:6.5,volume:0,amount:0},
+  {ts_code:"TS876",name:"AI芯片",type:"concept",category:"硬科技",sentiment:["寒武纪","海光信息"],sentiment_stocks:[{name:"寒武纪",change_5d:25.69},{name:"海光信息",change_5d:3.95}],heat:2,heat_name:"退潮",weekly_change:-2.0,amount_change_pct:-26.0,consecutive_up:2,consecutive_down:0,volatility:7.2,volume:0,amount:0},
+  {ts_code:"TS709",name:"军工",type:"concept",category:"国防",sentiment:["中航沈飞","航发动力"],sentiment_stocks:[{name:"中航沈飞",change_5d:-3.00},{name:"航发动力",change_5d:-5.80}],heat:2,heat_name:"退潮",weekly_change:0.2,amount_change_pct:-31.2,consecutive_up:2,consecutive_down:0,volatility:6.1,volume:0,amount:0},
+];
+
+function renderAll() {
+  if (!ALL_DATA) return;
+  const dataMap = {};
+  ALL_DATA.forEach(d => { dataMap[d.ts_code] = d; });
+
+  const sectors = userSectors.map(s => {
+    const d = dataMap[s.code];
+    if (d) return d;
+    return {
+      ts_code: s.code, name: s.name, type: s.type, category: s.category || "自定义",
+      sentiment: [], heat: 3, heat_name: "常温",
+      weekly_change: 0, amount_change_pct: 0,
+      consecutive_up: 0, consecutive_down: 0, volatility: 0,
+      volume: 0, amount: 0, no_data: true
+    };
+  });
+
+  sectors.sort((a, b) => (b.heat - a.heat) || (b.weekly_change - a.weekly_change));
+
+  document.getElementById('sector-count').textContent = `${sectors.length} SECTORS`;
+
+  document.getElementById('dataTable').innerHTML = sectors.map(d => {
+    const consec = d.consecutive_up > 0 ? d.consecutive_up : -d.consecutive_down;
+    const consecStr = consec > 0 ? `+${consec}` : `${consec}`;
+    let sentimentHtml = '—';
+    if (d.sentiment_stocks && d.sentiment_stocks.length > 0) {
+      sentimentHtml = d.sentiment_stocks.map(s => {
+        const cls = s.change_5d >= 0 ? 'up' : 'dn';
+        const sign = s.change_5d >= 0 ? '+' : '';
+        return `<span class="${cls}">${s.name}${sign}${s.change_5d.toFixed(2)}%</span>`;
+      }).join(' ');
+    } else if (d.sentiment && d.sentiment.length > 0) {
+      sentimentHtml = d.sentiment.join(' ');
+    }
+    return `<tr>
+      <td style="font-weight:600">${d.name}</td>
+      <td style="color:var(--t3)">${d.category||'—'}</td>
+      <td class="r ${d.weekly_change>=0?'up':'dn'}">${d.weekly_change>=0?'+':''}${d.weekly_change.toFixed(2)}%</td>
+      <td class="r ${d.amount_change_pct>=0?'up':'dn'}">${d.amount_change_pct>=0?'+':''}${d.amount_change_pct.toFixed(1)}%</td>
+      <td class="r">${fmtNum(d.volume,'vol')}</td>
+      <td class="r">${fmtNum(d.amount,'amt')}</td>
+      <td class="r ${consec>0?'up':consec<0?'dn':''}">${consecStr}</td>
+      <td class="r">${d.volatility.toFixed(1)}%</td>
+      <td class="r"><span class="${HEAT_CSS[d.heat]}">[${d.heat}]${d.heat_name}</span></td>
+      <td style="font-size:11px">${sentimentHtml}</td>
+      <td><div class="remove-btn" onclick="removeSector('${d.ts_code}')" title="移除">×</div></td>
+    </tr>`;
+  }).join('');
+}
+
+loadData().then(() => renderAll());
+</script>
+</body>
+</html>

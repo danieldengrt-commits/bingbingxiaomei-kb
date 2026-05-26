@@ -1,0 +1,831 @@
+{% extends "base.html" %}
+
+{% block title %}AI 冰美 · 冰冰小美知识库{% endblock %}
+
+{% block extra_css %}
+  .chat-container {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 6rem);
+    max-width: 780px;
+    margin: 0 auto;
+    width: 100%;
+  }
+  .chat-header {
+    margin-bottom: 1rem;
+    border-bottom: 4px solid var(--border);
+    padding-bottom: 0.75rem;
+  }
+  .chat-header .breadcrumb {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--muted);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 0.25rem;
+  }
+  .chat-header .breadcrumb a {
+    color: var(--ink);
+    text-decoration: none;
+    font-weight: 700;
+  }
+  .chat-header h1 {
+    font-weight: 900;
+    font-size: clamp(1.4rem, 3vw, 1.8rem);
+  }
+  .chat-header p {
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-top: 0.2rem;
+  }
+
+  .chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .chat-empty {
+    text-align: center;
+    color: var(--muted);
+    margin-top: 3rem;
+  }
+  .chat-empty .ce-icon {
+    font-size: 2.5rem;
+    margin-bottom: 0.75rem;
+  }
+  .chat-empty p {
+    font-size: 0.85rem;
+    margin-bottom: 0.3rem;
+  }
+  .chat-empty .ce-hints {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    justify-content: center;
+    margin-top: 1rem;
+  }
+  .ce-hint {
+    display: inline-block;
+    padding: 0.3rem 0.7rem;
+    border: 2px solid var(--border);
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all .12s;
+    background: #fff;
+  }
+  .ce-hint:hover { border-color: var(--accent); }
+
+  .msg {
+    max-width: 85%;
+    padding: 0.6rem 0.85rem;
+    font-size: 0.85rem;
+    line-height: 1.7;
+    border: 3px solid var(--border);
+    background: #fff;
+  }
+  .msg-user {
+    align-self: flex-end;
+    background: var(--ink);
+    color: #fff;
+    border-color: var(--ink);
+  }
+  .msg-ai {
+    align-self: flex-start;
+  }
+  .msg-ai .ai-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.5rem;
+    letter-spacing: 0.15em;
+    color: var(--muted);
+    margin-bottom: 0.25rem;
+  }
+
+  /* AI 回答正文的富文本样式 */
+  .ai-body h1, .ai-body h2, .ai-body h3 {
+    font-weight: 900;
+    margin: 1rem 0 0.4rem;
+    color: var(--accent);
+  }
+  .ai-body h1 { font-size: 1.1rem; border-bottom: 2px solid var(--border); padding-bottom: 0.2rem; }
+  .ai-body h2 { font-size: 0.95rem; }
+  .ai-body h3 { font-size: 0.85rem; color: var(--ink); }
+  .ai-body strong { color: var(--accent2); font-weight: 900; }
+  .ai-body em { color: var(--accent3); font-style: normal; }
+  .ai-body blockquote {
+    border-left: 3px solid var(--accent);
+    margin: 0.5rem 0;
+    padding: 0.3rem 0.8rem;
+    background: rgba(26,58,92,.04);
+    color: #444;
+    font-size: 0.82rem;
+  }
+  .ai-body pre {
+    background: rgba(0,0,0,.03);
+    border: 1px solid rgba(0,0,0,.08);
+    padding: 0.6rem 0.8rem;
+    overflow-x: auto;
+    font-size: 0.78rem;
+    line-height: 1.6;
+    margin: 0.5rem 0;
+    white-space: pre-wrap;
+  }
+  .ai-body code {
+    background: rgba(0,0,0,.05);
+    padding: 0.1rem 0.3rem;
+    font-size: 0.8rem;
+    font-family: 'Space Mono', monospace;
+  }
+  .ai-body pre code {
+    background: none;
+    padding: 0;
+    font-size: 0.78rem;
+    display: block;
+  }
+  .ai-body hr { border: none; border-top: 2px solid var(--border); margin: 0.8rem 0; }
+  .ai-body ul, .ai-body ol { padding-left: 1.2rem; margin: 0.4rem 0; }
+  .ai-body li { margin-bottom: 0.2rem; }
+  .ai-body p { margin-bottom: 0.5rem; }
+
+  .msg-sources {
+    margin-top: 0.5rem;
+    padding-top: 0.4rem;
+    border-top: 1px solid rgba(0,0,0,.08);
+    font-size: 0.7rem;
+  }
+  .msg-sources .src-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.5rem;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    margin-bottom: 0.2rem;
+  }
+  .msg-sources a {
+    display: block;
+    color: var(--accent);
+    text-decoration: none;
+    font-size: 0.72rem;
+    padding: 0.15rem 0;
+  }
+  .msg-sources a:hover { color: var(--ink); text-decoration: underline; }
+	  .msg-sources .src-linked {
+	    padding-left: 0.5rem;
+	    border-left: 2px solid var(--muted);
+	    font-size: 0.68rem;
+	    opacity: 0.8;
+	  }
+	  .msg-sources .src-counter {
+	    color: #c41e3a;
+	  }
+	  .msg-sources .src-counter:hover { color: #a01830; }
+	  .ai-body table.md-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0.5rem 0;
+    font-size: 0.78rem;
+  }
+  .ai-body table.md-table th,
+  .ai-body table.md-table td {
+    border: 1px solid var(--border);
+    padding: 0.35rem 0.6rem;
+    text-align: left;
+    vertical-align: top;
+  }
+  .ai-body table.md-table th {
+    background: rgba(0,0,0,.04);
+    font-weight: 700;
+  }
+  .ai-body a.concept-tag {
+	    display: inline-block;
+	    color: var(--accent);
+	    text-decoration: none;
+	    border-bottom: 1px dashed var(--accent);
+	    cursor: pointer;
+	    transition: background 0.12s;
+	  }
+	  .ai-body a.concept-tag:hover {
+	    background: rgba(184, 134, 11, 0.1);
+	    border-bottom-style: solid;
+	  }
+	  .msg-related {
+	    margin-top: 0.6rem;
+	    padding-top: 0.5rem;
+	    border-top: 1px solid rgba(0,0,0,.06);
+	  }
+	  .msg-related .rel-label {
+	    font-family: 'Space Mono', monospace;
+	    font-size: 0.5rem;
+	    letter-spacing: 0.1em;
+	    color: var(--muted);
+	    margin-bottom: 0.3rem;
+	  }
+	  .msg-related .rel-tags {
+	    display: flex;
+	    flex-wrap: wrap;
+	    gap: 0.35rem;
+	  }
+	  .rel-tag {
+	    display: inline-block;
+	    padding: 0.2rem 0.55rem;
+	    border: 2px solid var(--border);
+	    font-size: 0.72rem;
+	    cursor: pointer;
+	    background: #faf6ef;
+	    transition: all 0.12s;
+	    font-family: 'Noto Sans SC', sans-serif;
+	  }
+	  .rel-tag:hover {
+	    border-color: var(--accent);
+	    background: rgba(184, 134, 11, 0.06);
+	  }
+
+  .msg-loading {
+    align-self: flex-start;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.8rem;
+    color: var(--muted);
+    padding: 0.5rem 0.85rem;
+  }
+  .msg-loading .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--muted);
+    animation: bounce 1.2s infinite;
+  }
+  .msg-loading .dot:nth-child(2) { animation-delay: 0.2s; }
+  .msg-loading .dot:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes bounce {
+    0%, 60%, 100% { transform: translateY(0); }
+    30% { transform: translateY(-6px); }
+  }
+
+  .chat-notice {
+  margin: 0 0 0.5rem 0;
+  padding: 0.5rem 0.75rem;
+  background: #fff8e1;
+  border-left: 3px solid #b8860b;
+  font-size: 0.75rem;
+  color: #8b6914;
+  border-radius: 3px;
+}
+.chat-input-area {
+    padding: 0.75rem 0;
+    border-top: 2px solid var(--border);
+    display: flex;
+    gap: 0.5rem;
+  }
+  .chat-input-area textarea {
+    flex: 1;
+    padding: 0.5rem 0.75rem;
+    border: 2px solid var(--border);
+    font-family: 'Noto Sans SC', sans-serif;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    resize: none;
+    outline: none;
+    min-height: 44px;
+    max-height: 120px;
+    background: #fff;
+  }
+  .chat-input-area textarea:focus { border-color: var(--accent); }
+  .chat-input-area button {
+    padding: 0 1.2rem;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    background: var(--ink);
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .chat-input-area button:hover { opacity: 0.85; }
+  .chat-input-area button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .chat-footnote {
+    text-align: center;
+    font-size: 0.65rem;
+    color: var(--muted);
+    padding-top: 0.5rem;
+    font-family: 'Space Mono', monospace;
+    letter-spacing: 0.03em;
+  }
+
+  @media (max-width: 600px) {
+    .chat-container { height: calc(100vh - 4rem); }
+    .msg { max-width: 92%; }
+  }
+{% endblock %}
+
+{% block content %}
+<div class="chat-container">
+  <div class="disclaimer-banner">此项目纯属娱乐，仍在调试当中，不构成任何投资建议</div>
+
+  <div class="chat-header">
+    <div class="breadcrumb"><a href="{{ url_for('index') }}">首页</a> / AI 冰美</div>
+    <h1>AI 冰美</h1>
+    <p>基于冰美 9,000+ 帖子和概念卡片的智能问答。回答有原文引用，可追溯。</p>
+  </div>
+
+  <!-- 消息区域 -->
+  <div class="chat-messages" id="chatMessages">
+    <div class="chat-empty" id="chatEmpty">
+      <div class="ce-icon">&#x25B4;</div>
+      <p>向 AI 冰美提问</p>
+      <p style="font-size:0.75rem;color:#aaa;">基于她的帖子和知识体系回答，不是大模型凭空编造</p>
+      <div class="ce-hints">
+        <span class="ce-hint" onclick="askHint(this)">冰美怎么看流动性？</span>
+        <span class="ce-hint" onclick="askHint(this)">亏钱效应的核心是什么？</span>
+        <span class="ce-hint" onclick="askHint(this)">国运和交易有什么关系？</span>
+        <span class="ce-hint" onclick="askHint(this)">情绪周期的判断方法</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 输入区 -->
+  <div class="chat-notice">⚠ 此页面不保存对话记录，刷新或离开后对话将丢失</div>
+  <div class="chat-input-area">
+    <textarea id="chatInput" placeholder="输入问题..." rows="1" onkeydown="handleKey(event)"></textarea>
+    <button id="chatSend" onclick="sendMessage()">发送</button>
+  </div>
+  <div class="chat-footnote">若 20 秒左右无响应，可能服务异常，欢迎留言反馈</div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // 从 url_for 获取应用根路径（适配 /kb/ 等前缀部署）
+  var KB_ROOT = "{{ url_for('index') }}".replace(/\/$/, '');
+  let isGenerating = false;
+  let conceptPathMap = {};  // 概念名→文件路径，供链接使用
+  const messages = document.getElementById('chatMessages');
+  const input = document.getElementById('chatInput');
+  const sendBtn = document.getElementById('chatSend');
+  const empty = document.getElementById('chatEmpty');
+
+  function handleKey(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  }
+
+  function askHint(el) {
+    input.value = el.textContent;
+    sendMessage();
+  }
+
+  function sendMessage() {
+    const question = input.value.trim();
+    if (!question || isGenerating) return;
+
+    // 隐藏空状态
+    if (empty) empty.style.display = 'none';
+
+    // 添加用户消息
+    addMessage('user', question);
+    scrollToBottom();
+
+    // 添加加载动画
+    const loadDiv = document.createElement('div');
+    loadDiv.className = 'msg-loading';
+    loadDiv.id = 'msgLoading';
+    loadDiv.innerHTML = '思考中 <span class="dot"></span><span class="dot"></span><span class="dot"></span>';
+    messages.appendChild(loadDiv);
+
+    // 添加 AI 消息占位
+    const aiDiv = document.createElement('div');
+    aiDiv.className = 'msg msg-ai';
+    aiDiv.id = 'msgCurrent';
+    aiDiv.innerHTML = '<div class="ai-label">AI 冰美</div><div class="ai-body"></div>';
+    messages.appendChild(aiDiv);
+
+    input.value = '';
+    input.style.height = 'auto';
+    isGenerating = true;
+    sendBtn.disabled = true;
+
+    const aiBody = aiDiv.querySelector('.ai-body');
+    let fullText = '';
+
+    // SSE 请求（本地开发用 Flask，生产环境直连 api.bbxmkb.cn）
+    const apiBase = window.location.hostname === 'localhost'
+      ? ''
+      : 'https://api.bbxmkb.cn';
+
+    fetch(apiBase + "{{ url_for('api_chat') }}", {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ question: question })
+    }).then(response => {
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+
+      function read() {
+        reader.read().then(({ done, value }) => {
+          if (done) { finish(); return; }
+
+          const chunk = decoder.decode(value, { stream: true });
+          const lines = chunk.split('\n');
+
+          for (const line of lines) {
+            if (!line.startsWith('data: ')) continue;
+            const data = line.slice(6);
+            if (data === '[DONE]') { finish(); return; }
+
+            try {
+              const event = JSON.parse(data);
+              if (event.type === 'token') {
+                fullText += event.text;
+                // 流式时用纯文本避免闪烁，完成后再渲染HTML
+                aiBody.textContent = fullText;
+                scrollToBottom();
+              } else if (event.type === 'sources') {
+                renderSources(aiDiv, event.sources);
+              } else if (event.type === 'error') {
+                aiBody.textContent = event.message;
+                finish();
+              }
+            } catch (e) {}
+          }
+          read();
+        });
+      }
+      read();
+    }).catch(err => {
+      aiBody.textContent = '网络错误，请稍后重试';
+      finish();
+    });
+
+    function finish() {
+      const loadDiv = document.getElementById('msgLoading');
+      if (loadDiv) loadDiv.remove();
+      // 流式结束，用 Markdown 渲染替换纯文本
+      if (fullText) {
+        aiBody.innerHTML = renderMarkdown(fullText);
+        // 用已知概念标题做自动链接
+        var knownTitles = [];
+        var srcElements = aiDiv.querySelectorAll('.msg-sources a');
+        srcElements.forEach(function(a) {
+          var t = a.textContent || '';
+          // 从来源链接提取标题
+          var m = t.match(/^\[\d+\]\s*(.+?)\s*·/);
+          if (m && m[1]) knownTitles.push(m[1]);
+        });
+        if (knownTitles.length > 0) {
+          makeConceptsClickable(aiBody, knownTitles);
+        }
+      }
+      aiDiv.removeAttribute('id');
+      isGenerating = false;
+      sendBtn.disabled = false;
+      input.focus();
+      scrollToBottom();
+    }
+  }
+
+  function scrollToBottom() {
+    // 用户往上翻了就不强制滚动，离底部 150px 以内才自动滚
+    var atBottom = messages.scrollHeight - messages.scrollTop - messages.clientHeight < 150;
+    if (atBottom) {
+      messages.scrollTop = messages.scrollHeight;
+    }
+  }
+
+  function addMessage(type, text) {
+    const div = document.createElement('div');
+    div.className = 'msg msg-' + type;
+    div.textContent = text;
+    messages.appendChild(div);
+  }
+
+  function renderSources(container, sources) {
+    if (!sources || sources.length === 0) return;
+
+    // 分组：概念卡片 > 重点文章（专栏/交易体系/三要素案例）> 帖子 > 反面案例
+    var concepts = sources.filter(function(s) { return s.src_type === 'concept'; });
+    var keyArticles = sources.filter(function(s) {
+      return s.src_type === 'post' && ['专栏', '交易体系', '三要素案例'].indexOf(s.category) >= 0;
+    });
+    var posts = sources.filter(function(s) {
+      return s.src_type === 'post' && ['专栏', '交易体系', '三要素案例'].indexOf(s.category) < 0 && s.category !== '反面案例';
+    });
+    var counters = sources.filter(function(s) { return s.category === '反面案例'; });
+
+    var srcDiv = document.createElement('div');
+    srcDiv.className = 'msg-sources';
+
+    function fmtDate(d) {
+      if (!d) return '';
+      var m = d.match(/(\d{4})-(\d{2})-(\d{2})/);
+      if (m) return ' ' + m[1] + '.' + m[2] + '.' + m[3];
+      return '';
+    }
+
+    function addGroup(label, items, cls) {
+      if (items.length === 0) return;
+      var title = document.createElement('div');
+      title.className = 'src-label';
+      title.textContent = label;
+      title.style.marginTop = '0.5rem';
+      srcDiv.appendChild(title);
+
+      items.forEach(function(s, i) {
+        var a = document.createElement('a');
+        if (s.src_type === 'concept' && s.path) {
+          a.href = KB_ROOT + '/article/' + encodeURIComponent(s.path);
+          a.target = '_blank';
+        } else if (s.path && s.category !== '帖子') {
+          a.href = KB_ROOT + '/posts/read?path=' + encodeURIComponent(s.path);
+          a.target = '_blank';
+        } else if (s.url) {
+          a.href = s.url;
+          a.target = '_blank';
+        } else {
+          a.href = '#';
+          a.style.cursor = 'default';
+          a.style.color = '#888';
+        }
+        if (cls) a.className = cls;
+
+        var txt = s.title + ' \u00b7 ' + s.category + fmtDate(s.date);
+        if (s.linked_from) txt += ' \u00b7 \u2190 ' + s.linked_from;
+        a.textContent = txt;
+        srcDiv.appendChild(a);
+      });
+    }
+
+    addGroup('\u6982\u5ff5\u5361\u7247', concepts, '');
+    addGroup('\u91cd\u70b9\u6587\u7ae0', keyArticles, '');
+    addGroup('\u76f8\u5173\u5e16\u5b50', posts, '');
+    addGroup('\u53cd\u9762\u6559\u8bad', counters, 'src-counter');
+
+    // 建议阅读原文提示
+    if (concepts.length > 0 || keyArticles.length > 0) {
+      var note = document.createElement('div');
+      note.style.cssText = 'margin-top:0.6rem;padding-top:0.4rem;border-top:1px dashed rgba(0,0,0,.1);font-size:0.65rem;color:var(--muted);font-family:"Space Mono",monospace;';
+      note.textContent = '\u2191 \u5efa\u8bae\u9605\u8bfb\u4e0a\u65b9\u6982\u5ff5\u5361\u7247\u548c\u91cd\u70b9\u6587\u7ae0\u539f\u6587\uff0c\u83b7\u53d6\u5b8c\u6574\u5185\u5bb9\u3002';
+      srcDiv.appendChild(note);
+    }
+
+    container.appendChild(srcDiv);
+
+    // 构建概念名→文件路径的映射（用于概念标签和文中链接）
+    sources.forEach(function(s) {
+      if (s.src_type === 'concept' && s.path && s.title) {
+        conceptPathMap[s.title] = s.path;
+      }
+    });
+      // 相关概念标签已移除——AI回答中已有推荐阅读，避免重复
+  }
+
+  // ===== Markdown 渲染 =====
+  function escapeHtml(s) {
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  function renderMarkdown(text) {
+    if (!text) return '';
+    var lines = text.split('\n');
+    var blocks = [];
+    var i = 0;
+
+    while (i < lines.length) {
+      var line = lines[i];
+
+      // Code fence ```
+      if (/^```/.test(line)) {
+        var codeLines = [];
+        i++; // skip opening ```
+        while (i < lines.length && !/^```/.test(lines[i])) {
+          codeLines.push(lines[i]);
+          i++;
+        }
+        i++; // skip closing ```
+        if (codeLines.length > 0) {
+          blocks.push('<pre><code>' + escapeHtml(codeLines.join('\n')) + '</code></pre>');
+        }
+        continue;
+      }
+
+      // Table (consecutive lines starting with |)
+      if (/^\|.+/.test(line)) {
+        var rawRows = [];
+        while (i < lines.length && /^\|.+/.test(lines[i])) {
+          rawRows.push(lines[i]);
+          i++;
+        }
+        // 过滤掉分隔行（如 |---|:---|）
+        var cleanRows = rawRows.filter(function(r) { return !/^\|[\s\-:|]+\|/.test(r); });
+        if (cleanRows.length > 0) {
+          var tableHtml = '<table class="md-table">';
+          if (cleanRows.length >= 1) {
+            tableHtml += '<thead><tr>';
+            parseTableRow(cleanRows[0]).forEach(function(c) { tableHtml += '<th>' + inlineFormat(c.trim()) + '</th>'; });
+            tableHtml += '</tr></thead><tbody>';
+            for (var r = 1; r < cleanRows.length; r++) {
+              tableHtml += '<tr>';
+              parseTableRow(cleanRows[r]).forEach(function(c) { tableHtml += '<td>' + inlineFormat(c.trim()) + '</td>'; });
+              tableHtml += '</tr>';
+            }
+            tableHtml += '</tbody>';
+          }
+          tableHtml += '</table>';
+          blocks.push(tableHtml);
+        }
+        continue;
+      }
+
+      // Horizontal rule
+      if (/^---\s*$/.test(line)) { blocks.push('<hr>'); i++; continue; }
+
+      // Headers
+      var h = line.match(/^(#{1,3})\s+(.*)$/);
+      if (h) {
+        var level = h[1].length;
+        blocks.push('<h' + level + '>' + inlineFormat(h[2] || '') + '</h' + level + '>');
+        i++; continue;
+      }
+
+      // Blockquote
+      if (/^>\s?/.test(line)) {
+        var quoteLines = [];
+        while (i < lines.length && /^>\s?/.test(lines[i])) {
+          quoteLines.push(lines[i].replace(/^>\s?/, ''));
+          i++;
+        }
+        blocks.push('<blockquote>' + inlineFormat(quoteLines.join('<br>')) + '</blockquote>');
+        continue;
+      }
+
+      // Unordered list
+      if (/^[-*]\s+/.test(line)) {
+        var items = [];
+        while (i < lines.length && /^[-*]\s+/.test(lines[i])) {
+          items.push('<li>' + inlineFormat(lines[i].replace(/^[-*]\s+/, '')) + '</li>');
+          i++;
+        }
+        blocks.push('<ul>' + items.join('') + '</ul>');
+        continue;
+      }
+
+      // Ordered list
+      if (/^\d+\.\s+/.test(line)) {
+        var oitems = [];
+        while (i < lines.length && /^\d+\.\s+/.test(lines[i])) {
+          oitems.push('<li>' + inlineFormat(lines[i].replace(/^\d+\.\s+/, '')) + '</li>');
+          i++;
+        }
+        blocks.push('<ol>' + oitems.join('') + '</ol>');
+        continue;
+      }
+
+      // Empty line
+      if (line.trim() === '') { i++; continue; }
+
+      // Paragraph
+      var paraLines = [];
+      while (i < lines.length && lines[i].trim() !== '' &&
+        !/^(#{1,3}\s|>\s?|[-*]\s+|\d+\.\s+|---\s*$)/.test(lines[i])) {
+        paraLines.push(lines[i]);
+        i++;
+      }
+      if (paraLines.length > 0) {
+        blocks.push('<p>' + inlineFormat(paraLines.join('<br>')) + '</p>');
+      }
+    }
+
+    return blocks.join('\n');
+  }
+
+  function parseTableRow(line) {
+    // Split by |, remove first and last empty
+    return line.split('|').slice(1, -1);
+  }
+
+  function inlineFormat(text) {
+    var s = escapeHtml(text);
+    // Restore <br> tags (AI may output literal <br>)
+    s = s.replace(/&lt;br\s*\/?&gt;/g, '<br>');
+    // Bold **text**
+    s = s.replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>');
+    // Italic *text*
+    s = s.replace(/(^|[^*])\*([^*\n]+)\*(?!\*)/g, '$1<em>$2</em>');
+    // Inline code `text`
+    s = s.replace(/`([^`]+)`/g, '<code>$1</code>');
+    return s;
+  }
+
+  function makeConceptsClickable(root, titles) {
+    // Deduplicate and sort by length descending (longer matches first)
+    var unique = [];
+    titles.forEach(function(t) { if (unique.indexOf(t) === -1) unique.push(t); });
+    unique.sort(function(a, b) { return b.length - a.length; });
+    if (unique.length === 0) return;
+
+    // Walk text nodes
+    var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+      acceptNode: function(node) {
+        var p = node.parentElement;
+        if (!p) return NodeFilter.FILTER_REJECT;
+        if (p.closest('a, code, strong')) return NodeFilter.FILTER_REJECT;
+        return NodeFilter.FILTER_ACCEPT;
+      }
+    });
+
+    var textNodes = [];
+    var node;
+    while ((node = walker.nextNode())) textNodes.push(node);
+
+    textNodes.forEach(function(textNode) {
+      var text = textNode.textContent;
+      if (!text || text.length < 2) return;
+
+      var bestIdx = text.length, bestTitle = null;
+      unique.forEach(function(title) {
+        var idx = text.indexOf(title);
+        if (idx >= 0 && idx < bestIdx) { bestIdx = idx; bestTitle = title; }
+      });
+
+      if (!bestTitle) return;
+
+      var before = text.slice(0, bestIdx);
+      var after = text.slice(bestIdx + bestTitle.length);
+      var parent = textNode.parentNode;
+      if (!parent) return;
+
+      if (before) parent.insertBefore(document.createTextNode(before), textNode);
+      var a = document.createElement('a');
+      var cpath = conceptPathMap[bestTitle];
+      a.href = cpath ? KB_ROOT + '/article/' + encodeURIComponent(cpath) : '#';
+      a.target = '_blank';
+      a.rel = 'noopener';
+      a.className = 'concept-link';
+      a.textContent = bestTitle;
+      a.title = cpath ? '\u67e5\u770b\u6982\u5ff5\u5361\u7247\uff1a' + bestTitle : '';
+      if (!cpath) { a.style.cursor = 'default'; a.style.color = 'inherit'; a.style.textDecoration = 'none'; a.style.borderBottom = '1px dashed var(--accent)'; }
+      parent.insertBefore(a, textNode);
+      if (after) {
+        var afterNode = document.createTextNode(after);
+        parent.insertBefore(afterNode, textNode);
+        // Recurse into tail
+        autoLinkOneTextNode(afterNode, unique);
+      }
+      parent.removeChild(textNode);
+    });
+  }
+
+  function autoLinkOneTextNode(textNode, titles) {
+    var text = textNode.textContent;
+    if (!text || text.length < 2) return;
+    var bestIdx = text.length, bestTitle = null;
+    titles.forEach(function(title) {
+      var idx = text.indexOf(title);
+      if (idx >= 0 && idx < bestIdx) { bestIdx = idx; bestTitle = title; }
+    });
+    if (!bestTitle) return;
+    var before = text.slice(0, bestIdx);
+    var after = text.slice(bestIdx + bestTitle.length);
+    var parent = textNode.parentNode;
+    if (!parent) return;
+    if (before) parent.insertBefore(document.createTextNode(before), textNode);
+    var a = document.createElement('a');
+    var cpath = conceptPathMap[bestTitle];
+    a.href = cpath ? KB_ROOT + '/article/' + encodeURIComponent(cpath) : '#';
+    a.className = 'concept-link';
+    a.textContent = bestTitle;
+    a.title = cpath ? '查看概念卡片：' + bestTitle : '';
+    if (!cpath) { a.style.cursor = 'default'; a.style.color = 'inherit'; a.style.textDecoration = 'none'; a.style.borderBottom = '1px dashed var(--accent)'; }
+    parent.insertBefore(a, textNode);
+    if (after) {
+      var afterNode = document.createTextNode(after);
+      parent.insertBefore(afterNode, textNode);
+      autoLinkOneTextNode(afterNode, titles);
+    }
+    parent.removeChild(textNode);
+  }
+
+  // 自动调整输入框高度
+  input.addEventListener('input', function() {
+    this.style.height = 'auto';
+    this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+  });
+
+  // 从首页跳转过来，自动填充问题并发送
+  (function() {
+    var params = new URLSearchParams(window.location.search);
+    var q = params.get('q');
+    if (q) {
+      input.value = q;
+      setTimeout(sendMessage, 300);
+    }
+  })();
+</script>
+{% endblock %}

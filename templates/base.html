@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}冰冰小美知识库{% endblock %}</title>
+<style>
+  /* 使用系统字体，避免 Google Fonts 被墙导致页面加载卡顿 */
+
+  :root {
+    --paper: #f4f0e8;
+    --ink: #111;
+    --accent: #1a3a5c;
+    --accent2: #c41e3a;
+    --accent3: #b8860b;
+    --border: #222;
+    --muted: #666;
+    --sidebar-bg: #1a2332;
+    --sidebar-text: #cbd5e1;
+    --sidebar-hover: #fff;
+    --sidebar-active: rgba(184,134,11,.15);
+    --sidebar-border: rgba(255,255,255,.08);
+    --tag-bg: #f4f0e8;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans SC', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.6;
+    display: flex;
+    min-height: 100vh;
+  }
+
+  /* ===== SIDEBAR ===== */
+  .sidebar {
+    width: 240px;
+    min-width: 240px;
+    background: var(--sidebar-bg);
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    z-index: 100;
+    transition: width .25s, min-width .25s;
+  }
+  .sidebar-inner {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+  }
+  .sidebar.collapsed {
+    width: 30px;
+    min-width: 30px;
+    border-right: none;
+  }
+  .sidebar.collapsed .sidebar-inner { display: none; }
+  /* Toggle — inside sidebar right edge, subtle */
+  .sidebar-toggle {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 20px;
+    height: 38px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: rgba(255,255,255,.25);
+    font-size: 0.55rem;
+    padding: 0;
+    transition: color .15s, background .15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 101;
+    border-radius: 6px;
+    margin-right: 2px;
+  }
+  .sidebar-toggle:hover {
+    color: rgba(255,255,255,.7);
+    background: rgba(255,255,255,.06);
+  }
+  .sidebar-toggle .tri {
+    display: inline-block;
+    transition: transform .25s;
+  }
+  .sidebar.collapsed .sidebar-toggle {
+    right: auto;
+    left: 0;
+    width: 30px;
+    height: auto;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(255,255,255,.45);
+    margin-right: 0;
+  }
+  .sidebar.collapsed .sidebar-toggle:hover { color: rgba(255,255,255,.7); }
+  .sidebar.collapsed .sidebar-toggle .tri {
+    transform: rotate(180deg);
+  }
+
+  .sidebar-header {
+    padding: 1.5rem 1.25rem 1rem;
+    border-bottom: 1px solid var(--sidebar-border);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .sidebar-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 0;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .sidebar-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .sidebar-user h4 {
+    color: #fff;
+    font-size: 0.85rem;
+    font-weight: 700;
+  }
+  .sidebar-user a {
+    color: var(--sidebar-text);
+    font-size: 0.65rem;
+    text-decoration: none;
+    font-family: 'SF Mono', 'Menlo', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', monospace;
+  }
+  .sidebar-user a:hover { color: #fff; }
+
+  .sidebar-home {
+    display: flex; align-items: center; gap: 0.6rem;
+    padding: 0.55rem 1.25rem;
+    font-size: 0.85rem; font-weight: 600;
+    color: var(--sidebar-text); text-decoration: none;
+    opacity: 0.5; transition: opacity .12s, color .12s;
+    border-bottom: 1px solid var(--sidebar-border);
+  }
+  .sidebar-home:hover { opacity: 1; color: var(--sidebar-hover); }
+
+  .sidebar-nav {
+    flex: 1;
+    padding: 0.5rem 0;
+    overflow-y: auto;
+  }
+
+  .nav-section-label {
+    padding: 0.75rem 1.25rem 0.25rem;
+    font-family: 'SF Mono', 'Menlo', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', monospace;
+    font-size: 0.55rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,.3);
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.55rem 1.25rem;
+    color: var(--sidebar-text);
+    text-decoration: none;
+    font-size: 0.82rem;
+    border-left: 3px solid transparent;
+    transition: all .12s;
+    cursor: pointer;
+  }
+  .nav-item:hover { background: rgba(255,255,255,.05); color: #fff; }
+  .nav-item.active {
+    color: #fff;
+    background: var(--sidebar-active);
+    border-left-color: #b8860b;
+    font-weight: 600;
+  }
+  .nav-item .icon {
+    font-size: 0.9rem;
+    width: 1.2rem;
+    text-align: center;
+    opacity: 0.7;
+  }
+  .nav-item .badge {
+    margin-left: auto;
+    font-family: 'SF Mono', 'Menlo', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', monospace;
+    font-size: 0.6rem;
+    padding: 0.1rem 0.5rem;
+    border-radius: 8px;
+    background: rgba(255,255,255,.1);
+    color: var(--sidebar-text);
+  }
+
+  .sidebar-footer {
+    padding: 0.75rem 1.25rem;
+    border-top: 1px solid var(--sidebar-border);
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .sidebar-footer-row {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+  .sidebar.collapsed .sidebar-footer-row { display: none; }
+  .sidebar-footer .mini-avatar {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'SF Mono', 'Menlo', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', monospace;
+    font-size: 0.55rem;
+    color: var(--sidebar-text);
+  }
+  .sidebar-footer .by {
+    font-size: 0.65rem;
+    color: rgba(255,255,255,.4);
+    font-family: 'SF Mono', 'Menlo', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', monospace;
+  }
+
+  /* ===== MAIN ===== */
+  .main {
+    margin-left: 240px;
+    flex: 1;
+    max-width: 1300px;
+    padding: 2rem 3rem 4rem;
+    min-height: 100vh;
+    transition: margin-left .25s;
+  }
+
+  .disclaimer-banner {
+    border: 2px solid var(--accent3);
+    background: rgba(184, 134, 11, 0.08);
+    padding: 0.4rem 0.8rem;
+    font-size: 0.72rem;
+    color: var(--accent3);
+    font-family: 'SF Mono', 'Menlo', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', monospace;
+    letter-spacing: 0.05em;
+    text-align: center;
+    margin-bottom: 1.5rem;
+  }
+  .sidebar.collapsed ~ .main {
+    margin-left: 30px;
+  }
+
+  /* ===== PREVIEW OVERLAY (shared) ===== */
+  .preview-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,.25);
+    z-index: 9998;
+    justify-content: center;
+    align-items: flex-start;
+    padding-top: 4rem;
+  }
+  .preview-overlay.open { display: flex; }
+  .preview-modal {
+    background: #fff;
+    border: 4px solid var(--border);
+    width: 680px;
+    max-width: 90vw;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 6px 6px 0 rgba(0,0,0,.12);
+    display: flex;
+    flex-direction: column;
+  }
+  .preview-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    border-bottom: 2px solid var(--border);
+    background: var(--paper);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .preview-title {
+    font-weight: 900;
+    font-size: 1rem;
+    line-height: 1.3;
+    margin: 0;
+  }
+  .preview-open-btn {
+    display: inline-block;
+    padding: 0.35rem 0.75rem;
+    background: var(--accent);
+    color: #fff;
+    font-family: 'SF Mono', 'Menlo', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    text-decoration: none;
+    font-weight: 700;
+    white-space: nowrap;
+    transition: opacity .12s;
+  }
+  .preview-open-btn:hover { opacity: 0.85; }
+  .preview-close {
+    background: none;
+    border: 2px solid var(--border);
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0.1rem 0.5rem;
+    line-height: 1;
+    color: var(--muted);
+    flex-shrink: 0;
+  }
+  .preview-close:hover { background: var(--ink); color: #fff; }
+  .preview-content {
+    padding: 1.25rem 1.5rem 1.5rem;
+    font-size: 0.82rem;
+    line-height: 1.7;
+    flex: 1;
+    overflow-y: auto;
+  }
+  .preview-content h2 {
+    font-weight: 900;
+    font-size: 1.1rem;
+    margin: 1.25rem 0 0.5rem;
+    padding-top: 1rem;
+    border-top: 2px solid var(--border);
+  }
+  .preview-content h2:first-child {
+    border-top: none;
+    padding-top: 0;
+    margin-top: 0;
+  }
+  .preview-content h3 {
+    font-weight: 700;
+    font-size: 0.85rem;
+    margin: 0.75rem 0 0.3rem;
+    color: #333;
+  }
+  .preview-content blockquote {
+    border-left: 3px solid var(--accent3);
+    padding: 0.4rem 0 0.4rem 1rem;
+    margin: 0.5rem 0;
+    background: var(--paper);
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #333;
+  }
+  .preview-content pre {
+    font-family: 'SF Mono', 'Menlo', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', monospace;
+    font-size: 0.65rem;
+    line-height: 1.5;
+    background: var(--paper);
+    border: 2px solid var(--border);
+    padding: 0.75rem;
+    margin: 0.5rem 0;
+    overflow-x: auto;
+    white-space: pre;
+  }
+  .preview-content p { margin-bottom: 0.5rem; }
+  .preview-content strong { color: #000; font-weight: 900; }
+  .preview-content em { color: var(--accent2); font-style: normal; }
+  .preview-content a.wiki-link {
+    color: var(--accent);
+    font-weight: 600;
+    text-decoration: none;
+    border-bottom: 2px solid var(--accent);
+    transition: all .1s;
+  }
+  .preview-content a.wiki-link:hover {
+    background: var(--accent);
+    color: #fff;
+  }
+  .wiki-link-unresolved {
+    color: var(--muted);
+    text-decoration: underline;
+    text-decoration-style: dashed;
+    text-underline-offset: 3px;
+    cursor: help;
+  }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 900px) {
+    .sidebar { width: 200px; }
+    .main { margin-left: 200px; padding: 2rem 1.5rem; }
+  }
+  @media (max-width: 640px) {
+    .sidebar { display: none; }
+    .main { margin-left: 0; padding: 1.5rem; }
+    .preview-modal { width: 95vw; max-height: 85vh; }
+  }
+
+  {% block extra_css %}{% endblock %}
+</style>
+</head>
+<body>
+
+<!-- ===== SIDEBAR ===== -->
+<aside class="sidebar">
+  <div class="sidebar-inner">
+  <div class="sidebar-header">
+    <div class="sidebar-avatar"><img src="{{ url_for('static', filename='images/avatar.png') }}" alt="冰冰小美"></div>
+    <div class="sidebar-user">
+      <h4>冰冰小美</h4>
+      <a href="https://xueqiu.com/u/7143769715" target="_blank">雪球 &#8594;</a>
+    </div>
+  </div>
+
+  {% if show_home_link %}
+  <a href="{{ url_for('index') }}" class="sidebar-home">&#8592; 返回首页</a>
+  {% endif %}
+
+  <div class="sidebar-nav">
+    <div class="nav-section-label">功能</div>
+    <a class="nav-item {% if current_page == 'knowledge_base' %}active{% endif %}" href="{{ url_for('knowledge_base') }}">
+      <span class="icon">&#x25C9;</span> 知识库
+    </a>
+    <a class="nav-item {% if current_page == 'posts' %}active{% endif %}" href="{{ url_for('posts_landing') }}">
+      <span class="icon">&#x2630;</span> 看看帖子
+    </a>
+    <a class="nav-item" href="#">
+      <span class="icon">&#x25A3;</span> 冰美工作面板
+      <span class="badge">soon</span>
+    </a>
+    <a class="nav-item {% if current_page == 'chat' %}active{% endif %}" href="{{ url_for('chat_page') }}">
+      <span class="icon">&#x25B4;</span> AI 冰美
+    </a>
+  </div>
+
+  <div class="sidebar-footer">
+    <div class="sidebar-footer-row">
+      <div class="mini-avatar"><img src="{{ url_for('static', filename='images/daniel.jpg') }}" alt="Daniel" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:0;"></div>
+      <span class="by">由 Daniel 整理</span>
+    </div>
+    <a href="{{ url_for('guestbook') }}" class="sidebar-footer-row" style="text-decoration:none;color:inherit;">
+      <div class="mini-avatar">&#x2709;</div>
+      <span class="by">留言板</span>
+    </a>
+    <a href="{{ url_for('about') }}" class="sidebar-footer-row" style="text-decoration:none;color:inherit;">
+      <div class="mini-avatar">&#x2630;</div>
+      <span class="by">关于本站</span>
+    </a>
+  </div>
+  </div><!-- /.sidebar-inner -->
+  <button class="sidebar-toggle" id="sidebarToggle" title="收起侧边栏"><span class="tri">&#x25C0;</span></button>
+</aside>
+
+<!-- ===== MAIN ===== -->
+<div class="main">
+{% block content %}{% endblock %}
+</div>
+
+<!-- ===== PREVIEW OVERLAY ===== -->
+<div class="preview-overlay" id="previewOverlay">
+  <div class="preview-modal">
+    <div class="preview-header">
+      <h3 class="preview-title" id="previewTitle"></h3>
+      <a href="#" class="preview-open-btn" id="previewOpenBtn" target="_blank">在看看帖子里打开 &#8594;</a>
+      <button class="preview-close" id="previewClose">&times;</button>
+    </div>
+    <div class="preview-content" id="previewContent"></div>
+  </div>
+</div>
+
+<script>
+  // API 基础路径（生产环境走香港服务器，本地开发走 Flask）
+  var apiBase = window.location.hostname === 'localhost' ? '' : 'https://api.bbxmkb.cn';
+
+  // 浮窗预览
+  const previewOverlay = document.getElementById('previewOverlay');
+  const previewTitle = document.getElementById('previewTitle');
+  const previewContent = document.getElementById('previewContent');
+  const previewOpenBtn = document.getElementById('previewOpenBtn');
+  const previewClose = document.getElementById('previewClose');
+
+  function showPreview(path, title, linkHref) {
+    previewTitle.textContent = title || '加载中...';
+    previewContent.innerHTML = '<p style="color:var(--muted)">加载中...</p>';
+    previewOpenBtn.href = linkHref || '/article/' + path;
+    previewOverlay.classList.add('open');
+
+    fetch(apiBase + '/api/preview/' + path)
+      .then(r => r.json())
+      .then(data => {
+        if (data.error) {
+          previewContent.innerHTML = '<p style="color:var(--accent2)">' + data.error + '</p>';
+          return;
+        }
+        previewTitle.textContent = data.title;
+        previewContent.innerHTML = data.content;
+        previewOpenBtn.href = data.full_url;
+      })
+      .catch(() => {
+        previewContent.innerHTML = '<p style="color:var(--accent2)">加载失败</p>';
+      });
+  }
+
+  function closePreview() {
+    previewOverlay.classList.remove('open');
+    previewContent.innerHTML = '';
+  }
+
+  previewClose.addEventListener('click', closePreview);
+  previewOverlay.addEventListener('click', function(e) {
+    if (e.target === previewOverlay) closePreview();
+  });
+
+  // 为所有 wiki-link 绑定浮窗预览
+  document.addEventListener('click', function(e) {
+    const link = e.target.closest('a.wiki-link');
+    if (!link) return;
+    e.preventDefault();
+    const path = link.getAttribute('data-path');
+    const title = link.textContent;
+    const href = link.getAttribute('href');
+    if (path) {
+      showPreview(path, title, href);
+    }
+  });
+
+  // ESC 关闭浮窗
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closePreview();
+  });
+
+  // ===== SIDEBAR TOGGLE =====
+  const sidebar = document.querySelector('.sidebar');
+  const sidebarToggle = document.getElementById('sidebarToggle');
+  if (sidebar && sidebarToggle) {
+    sidebarToggle.addEventListener('click', function() {
+      sidebar.classList.toggle('collapsed');
+      if (sidebar.classList.contains('collapsed')) {
+        sidebarToggle.title = '展开侧边栏';
+        localStorage.setItem('kb-sidebar-collapsed', '1');
+      } else {
+        sidebarToggle.title = '收起侧边栏';
+        localStorage.setItem('kb-sidebar-collapsed', '0');
+      }
+    });
+    // 恢复上次状态
+    if (localStorage.getItem('kb-sidebar-collapsed') === '1') {
+      sidebar.classList.add('collapsed');
+      sidebarToggle.title = '展开侧边栏';
+    }
+  }
+</script>
+
+{% block scripts %}{% endblock %}
+</body>
+</html>

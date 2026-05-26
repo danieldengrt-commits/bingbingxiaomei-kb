@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block title %}更新日志 · 冰冰小美知识库{% endblock %}
+
+{% block extra_css %}
+  .page-header {
+    margin-bottom: 1.5rem;
+    border-bottom: 4px solid var(--border);
+    padding-bottom: 1rem;
+  }
+  .page-header .breadcrumb {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--muted);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+  .page-header .breadcrumb a {
+    color: var(--ink);
+    text-decoration: none;
+    font-weight: 700;
+  }
+  .page-header h1 {
+    font-weight: 900;
+    font-size: clamp(1.5rem, 3vw, 2rem);
+  }
+
+  .page-body {
+    background: #fff;
+    border: 3px solid var(--border);
+    padding: 2rem;
+    font-size: 0.9rem;
+    line-height: 1.8;
+    max-width: 680px;
+  }
+
+  .changelog-entry {
+    border-bottom: 1px solid rgba(0,0,0,.06);
+    padding: 0.75rem 0;
+  }
+  .changelog-entry:first-of-type { padding-top: 0; }
+  .changelog-entry:last-of-type { border-bottom: none; }
+  .changelog-entry .cl-date {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.55rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.2rem;
+  }
+  .changelog-entry .cl-title {
+    font-weight: 700;
+    font-size: 0.85rem;
+    margin-bottom: 0.15rem;
+  }
+  .changelog-entry ul {
+    padding-left: 1.2rem;
+    font-size: 0.8rem;
+    color: #555;
+    line-height: 1.6;
+  }
+  .changelog-entry li { margin-bottom: 0.1rem; }
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="breadcrumb"><a href="{{ url_for('index') }}">首页</a> / 更新日志</div>
+  <h1>更新日志</h1>
+</div>
+
+<div class="page-body">
+  <div class="changelog-entry">
+    <div class="cl-date">2026.05.22</div>
+    <div class="cl-title">看看帖子功能上线</div>
+    <ul>
+      <li>新增「随便看看」—— 卡片叠放随机阅读核心文章</li>
+      <li>新增「时间线阅读」—— 无限滚动浏览全部/重点帖子，支持关键词搜索</li>
+      <li>新增「核心文章目录」—— 按来源分 5 组浏览 350 篇核心文章</li>
+      <li>新增「帖子阅读页」—— 单篇帖子全文阅读，自动提取标题、去除转评赞信息</li>
+      <li>概念词频 TOP 10 展示，点击可筛选相关帖子</li>
+      <li>新增「一键打包下载」—— 看看帖子页和知识库页各支持导出全部内容为单个 .md 文件</li>
+    </ul>
+  </div>
+
+  <div class="changelog-entry">
+    <div class="cl-date">2026.05.20</div>
+    <div class="cl-title">知识库总览 & 概念网络上线</div>
+    <ul>
+      <li>首页 + 知识库总览页面</li>
+      <li>9 个核心概念父卡 + 38 张子概念卡片，三层结构（根本决定层 / 核心驱动层 / 可观测表层）</li>
+      <li>8 大产业标的 + 4 个专题整理</li>
+      <li>面包屑级联下拉导航</li>
+      <li>侧边栏搜索（搜索全部笔记）</li>
+      <li>粗野风格设计定稿：深海军蓝侧边栏 + 奶油纸主区域 + 三层色系统</li>
+    </ul>
+  </div>
+
+  <div class="changelog-entry">
+    <div class="cl-date">2026.05.16</div>
+    <div class="cl-title">项目启动</div>
+    <ul>
+      <li>确立输入 → 整理 → 输出三大板块</li>
+      <li>知识结构拓扑框架确定</li>
+      <li>Flask + Obsidian vault 技术选型</li>
+    </ul>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,587 @@
+{% extends "base.html" %}
+
+{% block title %}冰冰小美知识库{% endblock %}
+
+{% block extra_css %}
+  /* ===== SECTION 1: WELCOME ===== */
+  .welcome { margin-bottom: 1.5rem; }
+  .welcome .label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.5rem;
+  }
+  .welcome h1 {
+    font-weight: 900;
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    line-height: 0.95;
+    letter-spacing: -0.03em;
+    color: var(--ink);
+  }
+  .welcome .tagline {
+    margin-top: 0.5rem;
+    font-weight: 500;
+    font-size: clamp(0.9rem, 1.5vw, 1.1rem);
+    line-height: 1.4;
+    text-align: left;
+    color: #555;
+  }
+  .welcome .tagline small {
+    display: block;
+    margin-top: 0.15rem;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.55rem;
+    letter-spacing: 0.25em;
+    color: var(--muted);
+    font-weight: 400;
+  }
+  .welcome .intro {
+    margin-top: 0.5rem;
+    font-size: 0.82rem;
+    line-height: 1.5;
+    color: #999;
+  }
+  .welcome .intro em {
+    color: var(--accent2);
+    font-style: normal;
+  }
+
+  /* welcome — left text + right stats */
+  .welcome-inner {
+    display: flex;
+    justify-content: space-between;
+  }
+  .welcome-text {
+    max-width: 600px;
+  }
+  .welcome-stats {
+    padding-left: 1rem;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* stats row — vertical */
+  .stats-row {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    flex: 1;
+  }
+  .stat-link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    padding: 0.3rem 0;
+    border-bottom: 1px solid rgba(0,0,0,.04);
+  }
+  .stat-link:last-child { border-bottom: none; }
+  a.stat-link:hover .num { text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--accent); text-decoration-thickness: 2px; }
+  .stat-block { text-align: right; }
+  .stat-block .num {
+    font-family: 'Noto Sans SC', sans-serif;
+    font-size: clamp(1rem, 2.2vw, 1.5rem);
+    font-weight: 700;
+    color: var(--accent);
+    line-height: 1;
+  }
+  .stat-block .desc {
+    font-size: 0.55rem;
+    color: var(--muted);
+    margin-top: 0.1rem;
+    line-height: 1.3;
+  }
+
+  /* ===== SECTION 2: THREE FEATURES ===== */
+  .features {
+    margin-bottom: 2rem;
+    border-top: 4px solid var(--border);
+    padding-top: 1.25rem;
+    position: relative;
+  }
+  .features::before {
+    content: '';
+    position: absolute;
+    top: -4px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 12px solid transparent;
+    border-right: 12px solid transparent;
+    border-top: 12px solid var(--border);
+    z-index: 1;
+  }
+  .features .section-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.75rem;
+  }
+  .feature-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 0.75rem;
+  }
+  .feature-card {
+    border: 3px solid var(--border);
+    padding: 1rem 1rem;
+    background: #fff;
+    transition: all .15s;
+    cursor: pointer;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+  .feature-card:hover {
+    border-color: var(--accent);
+    transform: translate(-1px, -1px);
+    box-shadow: 2px 2px 0 rgba(0,0,0,.08);
+  }
+  .feature-card .f-header {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-bottom: 0.5rem;
+  }
+  .feature-card .f-icon {
+    font-size: 1rem;
+    line-height: 1;
+  }
+  .feature-card .f-title {
+    font-weight: 900;
+    font-size: 0.9rem;
+  }
+  .feature-card .f-desc {
+    font-size: 0.72rem;
+    color: var(--muted);
+    line-height: 1.4;
+    flex: 1;
+  }
+  .feature-card .f-stats {
+    margin-top: 0.5rem;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.58rem;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    text-transform: uppercase;
+  }
+  .feature-card .f-status {
+    display: inline-block;
+    margin-top: 0.5rem;
+    align-self: flex-end;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.55rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    padding: 0.25rem 0.6rem;
+    border: 2px solid var(--border);
+  }
+  .feature-card .f-status.soon {
+    border-color: var(--accent2);
+    color: var(--accent2);
+  }
+  .feature-card .f-sub-row {
+    display: flex;
+    margin: 0.6rem 0;
+    border-top: 2px solid var(--border);
+    border-bottom: 2px solid var(--border);
+  }
+  .feature-card .f-sub-item {
+    flex: 1;
+    text-align: center;
+    text-decoration: none;
+    color: var(--ink);
+    padding: 0.5rem 0.2rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    transition: background .12s;
+    cursor: pointer;
+  }
+  .feature-card .f-sub-item + .f-sub-item {
+    border-left: 2px solid var(--border);
+  }
+  .feature-card .f-sub-item:hover {
+    background: var(--paper);
+  }
+  .feature-card .f-sub-count {
+    display: block;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.5rem;
+    font-weight: 400;
+    color: var(--muted);
+    margin-top: 0.15rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  <!-- ===== SECTION 3: AI BINGBING ===== -->
+  .ai-section {
+    margin-bottom: 2.5rem;
+  }
+  .ai-section .section-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.6rem;
+  }
+  .ai-box {
+    border: 4px solid var(--ink);
+    padding: 1.5rem;
+    background: #fff;
+  }
+  .ai-header-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+  }
+  .ai-header-row h2 {
+    font-weight: 900;
+    font-size: clamp(1.3rem, 2.5vw, 1.8rem);
+    margin: 0;
+  }
+  .ai-full-link {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 700;
+    padding: 0.3rem 0.6rem;
+    border: 2px solid var(--accent);
+    transition: all .12s;
+    white-space: nowrap;
+  }
+  .ai-full-link:hover { background: var(--accent); color: #fff; }
+  .ai-desc {
+    font-size: 0.82rem;
+    color: var(--muted);
+    margin-bottom: 1.25rem;
+    line-height: 1.5;
+  }
+
+  /* 示例提问卡片 */
+  .ai-examples {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+  }
+  .ai-example-card {
+    border: 3px solid var(--border);
+    padding: 0.9rem 1rem;
+    background: #fff;
+    cursor: pointer;
+    transition: all .12s;
+    font-weight: 700;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    text-align: center;
+  }
+  .ai-example-card:hover {
+    border-color: var(--accent);
+    transform: translate(-1px, -1px);
+    box-shadow: 2px 2px 0 rgba(0,0,0,.08);
+  }
+
+  /* 快捷提问输入 */
+  .ai-quick-ask {
+    display: flex;
+    border: 4px solid var(--border);
+    background: #fff;
+  }
+  .ai-quick-ask input {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    border: none;
+    font-family: 'Noto Sans SC', sans-serif;
+    font-size: 0.88rem;
+    background: #fff;
+    outline: none;
+  }
+  .ai-quick-ask button {
+    padding: 0.75rem 1.5rem;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    cursor: pointer;
+    font-weight: 700;
+  }
+  .ai-quick-ask button:hover { opacity: 0.85; }
+
+  @media (max-width: 900px) {
+    .ai-examples { grid-template-columns: 1fr; }
+  }
+
+  /* ===== SECTION 4: FEATURED CONCEPTS ===== */
+  .featured {
+    margin-bottom: 2.5rem;
+    border-top: 4px solid var(--border);
+    padding-top: 2.5rem;
+  }
+  .featured .section-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 1.5rem;
+  }
+  .featured .sub {
+    font-size: 0.9rem;
+    color: var(--muted);
+    margin-bottom: 1.5rem;
+  }
+  .featured-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+  }
+  .f-concept {
+    border: 3px solid var(--border);
+    padding: 1.25rem;
+    background: #fff;
+    cursor: pointer;
+    transition: all .12s;
+  }
+  .f-concept:hover {
+    border-color: var(--accent);
+    transform: translate(-1px, -1px);
+  }
+  .f-concept .f-layer {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.5rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #fff;
+    padding: 0.15rem 0.4rem;
+    display: inline-block;
+    margin-bottom: 0.5rem;
+  }
+  .f-concept .f-layer.l1 { background: var(--accent); }
+  .f-concept .f-layer.l2 { background: var(--accent2); }
+  .f-concept .f-layer.l3 { background: var(--accent3); }
+  .f-concept .f-name {
+    font-weight: 700;
+    font-size: 1rem;
+    margin-bottom: 0.3rem;
+  }
+  .f-concept .f-preview {
+    font-size: 0.78rem;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  /* ===== SECTION 5: ABOUT ===== */
+  .about {
+    border-top: 4px solid var(--border);
+    padding-top: 2.5rem;
+    padding-bottom: 2rem;
+  }
+  .about .section-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 1.5rem;
+  }
+  .about p {
+    font-size: 0.9rem;
+    line-height: 1.7;
+    color: #333;
+    max-width: 650px;
+  }
+  .about .placeholder {
+    color: var(--muted);
+    font-style: italic;
+  }
+
+  @media (max-width: 900px) {
+    .feature-grid { grid-template-columns: 1fr; }
+    .featured-grid { grid-template-columns: 1fr; }
+    .stats-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+  }
+{% endblock %}
+
+{% block content %}
+<!-- SECTION 1: WELCOME -->
+<section class="welcome">
+  <div class="welcome-inner">
+    <div class="welcome-text">
+      <div class="label">冰冰小美知识体系 · 知识网络</div>
+      <h1>冰冰小美知识库</h1>
+
+      <div class="tagline">
+        "投资是基于国运红利的分配史，投机是基于人性扭曲的封建史。"
+        <small>&mdash; 冰冰小美 · 2024.05.19 · 深圳欢乐海岸</small>
+      </div>
+
+      <div class="intro">
+        <p>这里是雪球用户 <em>冰冰小美</em> 2023 年至今的全部帖子和专栏。</p>
+        <p style="margin-top:0.75rem">通过 AI 分析将这些碎片化内容提炼为一张<strong>三层知识网络</strong>：根本决定层（国运、货币、人性）&rarr; 核心驱动层（竞争格局、流动性、风险、市场参与者）&rarr; 可观测表层（情绪交易、三要素联动）。9 个核心节点，47 张概念卡片，层层穿透，互相链接。</p>
+        <p style="margin-top:0.75rem; color:var(--muted); font-size:0.9rem">这里收集的帖子不是 1 比 1 复刻，不能抄作业。更多是我个人的学习过程。Enjoy.</p>
+      </div>
+    </div>
+
+    <div class="welcome-stats">
+      <div class="stats-row">
+        <a href="{{ url_for('knowledge_base') }}" class="stat-link">
+          <div class="stat-block">
+            <div class="num">47</div>
+            <div class="desc">概念卡片 · 9 节点 + 38 子概念</div>
+          </div>
+        </a>
+        <a href="#" class="stat-link">
+          <div class="stat-block">
+            <div class="num">9203</div>
+            <div class="desc">雪球帖子 · 日积月累</div>
+          </div>
+        </a>
+        <a href="#" class="stat-link">
+          <div class="stat-block">
+            <div class="num">120</div>
+            <div class="desc">专栏文章 · 体系核心</div>
+          </div>
+        </a>
+        <a href="{{ url_for('knowledge_base') }}" class="stat-link">
+          <div class="stat-block">
+            <div class="num">32</div>
+            <div class="desc">产业标的 · 8 大板块</div>
+          </div>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 2: THREE FEATURES -->
+<section class="features">
+  <div class="section-label">三大功能</div>
+  <div class="feature-grid">
+    <a href="{{ url_for('knowledge_base') }}" style="text-decoration:none;color:inherit;display:flex;">
+    <div class="feature-card">
+      <div class="f-header">
+        <div class="f-icon">&#x25C9;</div>
+        <div class="f-title">知识库</div>
+      </div>
+      <div class="f-desc">浏览冰美交易体系的完整知识图谱 — 核心概念、产业标的、专题整理，三层穿透，相互链接。</div>
+      <div class="f-stats">9 个核心概念 · 8 大产业 · 4 个专题整理</div>
+    </div>
+    </a>
+    <a href="{{ url_for('posts_landing') }}" style="text-decoration:none;color:inherit;display:flex;">
+    <div class="feature-card">
+      <div class="f-header">
+        <div class="f-icon">&#x2630;</div>
+        <div class="f-title">看看帖子</div>
+      </div>
+      <div class="f-desc">刷冰美的原帖，像在雪球一样向下滑动浏览。随机阅读、时间线浏览、核心文章目录。</div>
+      <div class="f-status">9,203 条帖子</div>
+    </div>
+    </a>
+    <div class="feature-card">
+      <div class="f-header">
+        <div class="f-icon">&#x25A3;</div>
+        <div class="f-title">冰美工作面板</div>
+      </div>
+      <div class="f-desc">冰美每天看什么？央妈操作、利率决议、汇率波动、融资融券、龙虎榜&hellip;&hellip;一个数据看板，跟着冰美的注意力走。</div>
+      <div class="f-status soon">建设中</div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 3: AI BINGBING -->
+<section class="ai-section">
+  <div class="section-label">AI 问答</div>
+
+  <div class="ai-box">
+    <div class="ai-header-row">
+      <h2>AI 冰美</h2>
+      <a href="{{ url_for('chat_page') }}" class="ai-full-link">打开完整对话 &#8599;</a>
+    </div>
+    <p class="ai-desc">基于冰美知识图谱的 RAG 问答。多步检索：向量匹配 &rarr; 概念链路追踪 &rarr; 关联卡片展开 &rarr; 正反案例对照，回答有原文引用。</p>
+
+    <!-- 示例提问 -->
+    <div class="ai-examples">
+      <div class="ai-example-card" onclick="aiGoChat('冰美怎么看流动性？')">冰美怎么看流动性？</div>
+      <div class="ai-example-card" onclick="aiGoChat('亏钱效应的核心是什么？')">亏钱效应的核心是什么？</div>
+      <div class="ai-example-card" onclick="aiGoChat('情绪周期怎么判断？')">情绪周期怎么判断？</div>
+    </div>
+
+    <!-- 快捷提问 -->
+    <div class="ai-quick-ask">
+      <input type="text" id="aiHomeInput" placeholder="输入问题，跳转完整对话..." onkeydown="if(event.key==='Enter') aiGoChat()" />
+      <button onclick="aiGoChat()">提问 &#8599;</button>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 4: FEATURED CONCEPTS -->
+<section class="featured">
+  <div class="sub">精选概念 · 专题推荐</div>
+  <div class="featured-grid">
+    <a href="{{ url_for('node_page', node_id='guoyun') }}" class="f-concept" style="text-decoration:none; color:inherit; display:block;">
+      <span class="f-layer l1">根本决定层</span>
+      <div class="f-name">国运</div>
+      <div class="f-preview">投资是基于国运红利的分配史。冰美体系的天花板，决定一切交易的方向。</div>
+    </a>
+    <a href="{{ url_for('node_page', node_id='fxtx') }}" class="f-concept" style="text-decoration:none; color:inherit; display:block;">
+      <span class="f-layer l2">核心驱动层</span>
+      <div class="f-name">亏钱效应</div>
+      <div class="f-preview">全库词频第一。"一切交易的开端"&mdash;亏钱效应扩散 = 流动性衰竭 = 做空力量发力。</div>
+    </a>
+    <a href="{{ url_for('node_page', node_id='fxtx') }}" class="f-concept" style="text-decoration:none; color:inherit; display:block;">
+      <span class="f-layer l2">核心驱动层</span>
+      <div class="f-name">做空</div>
+      <div class="f-preview">交易前的第一道认知工序。了解做空如何运作，才能知道怎么防守。</div>
+    </a>
+    <a href="{{ url_for('node_page', node_id='ldx') }}" class="f-concept" style="text-decoration:none; color:inherit; display:block;">
+      <span class="f-layer l2">核心驱动层</span>
+      <div class="f-name">流动性</div>
+      <div class="f-preview">三层模型：宏观（央妈）&#8594; 中观（机构）&#8594; 微观（游资散户）。钱的流向决定一切。</div>
+    </a>
+    <a href="{{ url_for('topic_page', topic_id='xinxi') }}" class="f-concept" style="text-decoration:none; color:inherit; display:block;">
+      <span class="f-layer" style="background:#888;">专题整理</span>
+      <div class="f-name">信息的金融意义</div>
+      <div class="f-preview">专栏系列。信息 = 金融资产，数据 = 预期差。冰美最系统的信息论阐述。</div>
+    </a>
+    <a href="{{ url_for('industry_page', industry_id='qiche') }}" class="f-concept" style="text-decoration:none; color:inherit; display:block;">
+      <span class="f-layer" style="background:#999;">产业标的</span>
+      <div class="f-name">产业标的库</div>
+      <div class="f-preview">8 大产业板块、32 张卡片 — 从方法论到全球对标，从个股分析到产业全景。</div>
+    </a>
+  </div>
+</section>
+
+<!-- SECTION 5: ABOUT -->
+<section class="about">
+  <div class="section-label">关于本站</div>
+  <p class="placeholder">[此处放本站作者的"背后的故事"&mdash;&mdash;手写稿待补充]</p>
+  <p style="margin-top:1rem; font-size:0.8rem; color:var(--muted); font-family:'Space Mono',monospace;">
+    冰冰小美知识库 · 由 Daniel 整理构建 · 2026
+  </p>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  function aiGoChat(question) {
+    var q = question || document.getElementById('aiHomeInput').value.trim();
+    if (!q) return;
+    window.location.href = "{{ url_for('chat_page') }}?q=" + encodeURIComponent(q);
+  }
+</script>
+{% endblock %}

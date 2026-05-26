@@ -1,0 +1,1065 @@
+{% extends "base.html" %}
+
+{% block title %}{{ node_info.name }} · 冰冰小美知识库{% endblock %}
+
+{% block extra_css %}
+  /* ===== BREADCRUMB ===== */
+  .node-breadcrumb {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--muted);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 0.75rem;
+    padding: 0.5rem 0;
+    border-bottom: 2px solid var(--border);
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    position: relative;
+  }
+  .node-breadcrumb a {
+    color: var(--ink);
+    text-decoration: none;
+    font-weight: 700;
+  }
+  .node-breadcrumb a:hover { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 3px; }
+  .node-breadcrumb::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 0; right: 0;
+    height: 10px;
+    z-index: 299;
+  }
+
+  /* ===== 3-COLUMN CASCADE DROPDOWN ===== */
+  .bc-nav-drop {
+    display: none;
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 0;
+    background: #fff;
+    border: 3px solid var(--border);
+    z-index: 300;
+    padding: 0;
+    box-shadow: 3px 3px 0 rgba(0,0,0,.08);
+  }
+  .node-breadcrumb:hover .bc-nav-drop { display: block; }
+  .bc-nav-panel {
+    display: grid;
+    grid-template-columns: 130px 220px 200px;
+    min-height: 200px;
+  }
+  .bc-nav-col {
+    padding: 0.75rem 0.85rem;
+    overflow-y: auto;
+    max-height: 400px;
+  }
+  .bc-nav-col:not(:last-child) {
+    border-right: 2px solid var(--border);
+  }
+  .bc-nav-col1-item {
+    display: block;
+    padding: 0.35rem 0.5rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--ink);
+    text-decoration: none;
+    cursor: pointer;
+    border-left: 3px solid transparent;
+    transition: border-color .1s;
+    margin-bottom: 0.15rem;
+  }
+  .bc-nav-col1-item:hover,
+  .bc-nav-col1-item.sel { border-left-color: var(--ink); }
+  .bc-nav-col1-item.sel { font-weight: 700; }
+  .bc-nav-col2-items {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+  .bc-nav-col2-group {
+    margin-bottom: 0.3rem;
+  }
+  .bc-nav-col2-gname {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.48rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    display: flex; align-items: center; gap: 0.25rem;
+    margin-bottom: 0.15rem;
+  }
+  .bc-nav-col2-item {
+    display: block;
+    padding: 0.2rem 0.5rem;
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: var(--ink);
+    text-decoration: none;
+    cursor: pointer;
+    border-left: 3px solid transparent;
+    transition: border-color .1s;
+  }
+  .bc-nav-col2-item:hover,
+  .bc-nav-col2-item.sel { border-left-color: var(--ink); font-weight: 700; }
+  .bc-nav-col2-item.cur { color: var(--accent2); border-left-color: var(--accent2); font-weight: 700; }
+  .bc-nav-col3-placeholder {
+    font-size: 0.62rem;
+    color: var(--muted);
+    font-style: italic;
+    padding: 0.3rem 0;
+  }
+  .bc-nav-col3-items {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+  }
+  .bc-nav-col3-item {
+    display: block;
+    padding: 0.2rem 0.5rem;
+    font-size: 0.68rem;
+    color: var(--muted);
+    text-decoration: none;
+    cursor: pointer;
+    border-left: 3px solid transparent;
+  }
+  .bc-nav-col3-item:hover { color: var(--ink); border-left-color: var(--muted); }
+
+  /* ===== NODE HEADER (inside .node-content) ===== */
+  .nc-title-row {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    margin-bottom: 0.35rem;
+    flex-wrap: wrap;
+    cursor: pointer;
+    user-select: none;
+  }
+  .nc-title-row:hover .nc-toggle { color: var(--ink); }
+  .nc-title {
+    font-weight: 900;
+    font-size: clamp(1.25rem, 3vw, 1.6rem);
+    line-height: 1.05;
+    color: var(--accent);
+    letter-spacing: -0.02em;
+  }
+  .nc-toggle {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--muted);
+    margin-left: auto;
+  }
+  .nc-toggle-arrow {
+    display: inline-block;
+    transition: transform .2s;
+  }
+  .node-content:not(.collapsed) .nc-toggle-arrow { transform: rotate(180deg); }
+  .node-layer-badge {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.48rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    padding: 0.15rem 0.45rem;
+    color: #fff;
+    white-space: nowrap;
+    position: relative;
+    top: -0.2rem;
+  }
+  .node-layer-badge.l1 { background: var(--accent); }
+  .node-layer-badge.l2 { background: var(--accent2); }
+  .node-layer-badge.l3 { background: var(--accent3); }
+  .nc-signature {
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--accent2);
+    line-height: 1.45;
+    margin-bottom: 0.1rem;
+    max-width: 750px;
+  }
+  .nc-signature strong { color: var(--accent2); }
+  .nc-signature + .nc-attribution {
+    font-size: 0.72rem;
+    color: var(--muted);
+    margin-bottom: 0.2rem;
+  }
+  .nc-meta {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.58rem;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 0.35rem;
+  }
+  .nc-divider {
+    border: none;
+    border-top: 2px solid var(--border);
+    margin: 0.5rem 0 0.4rem;
+  }
+
+  /* ===== COLLAPSIBLE NODE CONTENT ===== */
+  .nc-collapse-bottom {
+    display: none;
+    text-align: center;
+    padding: 0.5rem 0;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.55rem;
+    letter-spacing: 0.15em;
+    color: var(--muted);
+    cursor: pointer;
+    user-select: none;
+  }
+  .node-content:not(.collapsed) .nc-collapse-bottom { display: block; }
+  .nc-collapse-bottom:hover { color: var(--ink); }
+  .node-content.collapsed .node-content-body,
+  .node-content.collapsed .nc-divider,
+  .node-content.collapsed .nc-collapse-bottom {
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    margin: 0;
+    padding: 0;
+  }
+  .node-content.collapsed .nc-signature {
+    font-size: 0.75rem;
+    margin-bottom: 0.1rem;
+  }
+  .node-content.collapsed .nc-attribution {
+    font-size: 0.65rem;
+  }
+  .node-content.collapsed .nc-meta {
+    font-size: 0.6rem;
+  }
+  .node-content.collapsed {
+    padding-bottom: 0.15rem;
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+  }
+  .node-content.collapsed::after {
+    content: '点击任意位置展开阅读全文';
+    display: block;
+    text-align: center;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    padding: 0.6rem 0 0.3rem;
+    opacity: 0;
+    transition: opacity .2s;
+  }
+  .node-content.collapsed:hover::after {
+    opacity: 1;
+  }
+  .node-content.collapsed .node-content-body * {
+    pointer-events: none;
+  }
+  /* 隐藏 <hr> 分隔线 */
+  .node-content hr { display: none; }
+  .c-content hr { display: none; }
+
+  /* ===== NODE CONTENT ===== */
+  .node-content {
+    border: 3px solid var(--border);
+    background: #fff;
+    padding: 1rem 1rem 0.35rem;
+    margin-bottom: 1.5rem;
+    font-size: 0.82rem;
+    line-height: 1.7;
+    transition: padding .2s, border-color .2s;
+  }
+  /* 隐藏卡片内重复的概念标题（已显示在 nc-title-row） */
+  .node-content-body > h1:first-of-type {
+    display: none;
+  }
+  /* 隐藏定位元数据行 */
+  .node-content-body > blockquote:first-of-type {
+    display: none;
+  }
+  /* H2: 大章节标题 */
+  .node-content h2 {
+    font-weight: 900;
+    font-size: 1.1rem;
+    margin: 0.8rem 0 0.3rem;
+    padding-top: 0.6rem;
+    border-top: 3px solid var(--border);
+    letter-spacing: 0.02em;
+    color: var(--accent);
+  }
+  .node-content h2:first-of-type {
+    border-top: none;
+    padding-top: 0;
+    margin-top: 0;
+  }
+  /* H3: 子章节标题 */
+  .node-content h3 {
+    font-weight: 700;
+    font-size: 0.92rem;
+    margin: 0.5rem 0 0.2rem;
+    color: #1e4a6b;
+  }
+  /* H4: 细节标题 */
+  .node-content h4 {
+    font-weight: 700;
+    font-size: 0.78rem;
+    margin: 0.4rem 0 0.15rem;
+    color: #2a5f85;
+  }
+
+  /* ===== TABLES ===== */
+  .node-content table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0.75rem 0 1rem;
+    font-size: 0.75rem;
+    line-height: 1.5;
+  }
+  .node-content thead {
+    border-bottom: 3px solid var(--border);
+  }
+  .node-content thead th {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.58rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-align: left;
+    padding: 0.5rem 0.6rem 0.35rem;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .node-content tbody td {
+    padding: 0.4rem 0.6rem;
+    border-bottom: 1px solid #ddd;
+    vertical-align: top;
+  }
+  .node-content tbody tr:last-child td {
+    border-bottom: none;
+  }
+  .node-content tbody tr:hover {
+    background: var(--paper);
+  }
+
+  /* ===== LISTS ===== */
+  .node-content ul, .node-content ol {
+    padding-left: 1.5rem;
+    margin: 0.5rem 0;
+  }
+  .node-content li {
+    margin-bottom: 0.2rem;
+    line-height: 1.6;
+  }
+  .node-content li > ul, .node-content li > ol {
+    margin: 0.2rem 0;
+  }
+
+  /* ===== HORIZONTAL RULES ===== */
+  .node-content hr {
+    border: none;
+    border-top: 2px solid var(--border);
+    margin: 1.25rem 0;
+    opacity: 0.6;
+  }
+
+  /* ===== BLOCKQUOTES ===== */
+  /* 元数据行以外（即冰美原话引用）：砖红色强调 */
+  .node-content blockquote {
+    border-left: 4px solid var(--accent2);
+    padding: 0.5rem 0 0.5rem 1rem;
+    margin: 0.75rem 0;
+    background: rgba(196,30,58,.04);
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #8b1a2b;
+    line-height: 1.6;
+  }
+  .node-content blockquote strong {
+    color: var(--accent2);
+  }
+
+  /* ===== CODE / PRE ===== */
+  .node-content code {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.72rem;
+    background: var(--paper);
+    padding: 0.1rem 0.35rem;
+    border: 1px solid #ddd;
+  }
+  .node-content pre {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.62rem;
+    line-height: 1.55;
+    background: var(--paper);
+    border: 2px solid var(--border);
+    padding: 0.85rem;
+    margin: 0.75rem 0;
+    overflow-x: auto;
+    white-space: pre;
+  }
+  .node-content pre code {
+    font-size: inherit;
+    background: none;
+    padding: 0;
+    border: none;
+  }
+
+  /* ===== META NOTES ===== */
+  .meta-note {
+    color: #bbb;
+    font-size: 0.72rem;
+    font-style: italic;
+  }
+
+  /* ===== PARAGRAPHS ===== */
+  .node-content p { margin-bottom: 0.5rem; }
+  .node-content strong { color: #000; font-weight: 900; }
+  .node-content em { color: var(--accent2); font-style: normal; }
+
+  /* ===== WIKI-LINKS ===== */
+  .node-content a.wiki-link {
+    color: var(--accent);
+    font-weight: 600;
+    text-decoration: none;
+    border-bottom: 2px solid var(--accent);
+    transition: all .1s;
+  }
+  .node-content a.wiki-link:hover {
+    background: var(--accent);
+    color: #fff;
+  }
+  .wiki-link-unresolved {
+    color: var(--muted);
+    text-decoration: underline;
+    text-decoration-style: dashed;
+    text-underline-offset: 3px;
+    cursor: help;
+  }
+
+  /* ===== CONCEPT CARDS ===== */
+  .concept-section-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.5rem;
+    padding-top: 0.75rem;
+  }
+  .concept-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+  .concept-card {
+    border: 3px solid var(--border);
+    background: #fff;
+    transition: all .12s;
+    cursor: pointer;
+  }
+  .concept-card:hover { border-color: var(--accent); }
+  .concept-card.active { border-color: var(--accent2); background: var(--paper); }
+  .concept-card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.28rem 0.55rem;
+    pointer-events: none;
+  }
+  .concept-card .c-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .concept-card .c-name {
+    font-weight: 700;
+    font-size: 0.75rem;
+  }
+  .concept-card .c-toggle {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.5rem;
+    color: var(--muted);
+    transition: transform .2s;
+    flex-shrink: 0;
+  }
+  .concept-card.active .c-toggle { transform: rotate(180deg); }
+
+  /* 共享内容面板 */
+  .concept-content-panel {
+    display: none;
+    border: 3px solid var(--accent2);
+    background: #fff;
+    padding: 0.75rem 1rem 0.35rem;
+    margin-bottom: 1rem;
+  }
+  .concept-content-panel.open { display: block; }
+  .cc-collapse {
+    text-align: center;
+    padding: 0.5rem 0;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.55rem;
+    letter-spacing: 0.15em;
+    color: var(--muted);
+    cursor: pointer;
+    user-select: none;
+  }
+  .cc-collapse:hover { color: var(--ink); }
+
+  /* 卡片内完整文章 */
+  .c-content {
+    font-size: 0.78rem;
+    line-height: 1.7;
+  }
+  .c-content h2 {
+    font-weight: 900; font-size: 1rem; margin: 0.6rem 0 0.2rem;
+    padding-top: 0.5rem; border-top: 2px solid var(--border);
+    color: var(--accent);
+  }
+  .c-content h2:first-of-type { border-top: none; padding-top: 0; margin-top: 0; }
+  .c-content h3 { font-weight: 700; font-size: 0.85rem; margin: 0.4rem 0 0.15rem; color: #1e4a6b; }
+  .c-content h4 { font-weight: 700; font-size: 0.75rem; margin: 0.3rem 0 0.1rem; color: #2a5f85; }
+  .c-content blockquote {
+    border-left: 3px solid var(--accent2); padding: 0.3rem 0 0.3rem 0.75rem;
+    margin: 0.5rem 0; background: rgba(196,30,58,.03);
+    font-size: 0.78rem; color: #8b1a2b;
+  }
+  .c-content blockquote strong { color: var(--accent2); }
+  .c-content blockquote:first-of-type { display: none; }
+  .c-content h1:first-of-type { display: none; }
+  .c-content table { width: 100%; border-collapse: collapse; margin: 0.5rem 0; font-size: 0.68rem; }
+  .c-content thead { border-bottom: 2px solid var(--border); }
+  .c-content thead th { font-family: 'Space Mono', monospace; font-size: 0.52rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); text-align: left; padding: 0.35rem 0.5rem; }
+  .c-content tbody td { padding: 0.3rem 0.5rem; border-bottom: 1px solid #ddd; vertical-align: top; }
+  .c-content tbody tr:last-child td { border-bottom: none; }
+  .c-content tbody tr:hover { background: var(--paper); }
+  .c-content ul, .c-content ol { padding-left: 1.3rem; margin: 0.4rem 0; }
+  .c-content li { margin-bottom: 0.15rem; }
+  .c-content li > ul, .c-content li > ol { margin: 0.15rem 0; }
+  .c-content pre { font-family: 'Space Mono', monospace; font-size: 0.58rem; line-height: 1.5; background: var(--paper); border: 2px solid var(--border); padding: 0.6rem; margin: 0.5rem 0; overflow-x: auto; white-space: pre; }
+  .c-content code { font-family: 'Space Mono', monospace; font-size: 0.65rem; background: var(--paper); padding: 0.05rem 0.3rem; border: 1px solid #ddd; }
+  .c-content pre code { font-size: inherit; background: none; padding: 0; border: none; }
+  .c-content p { margin-bottom: 0.4rem; }
+  .c-content strong { color: #000; font-weight: 900; }
+  .c-content em { color: var(--accent2); font-style: normal; }
+  .c-content hr { display: none; }
+  .c-content a.wiki-link {
+    color: var(--accent); font-weight: 600; text-decoration: none;
+    border-bottom: 2px solid var(--accent);
+  }
+  .c-content a.wiki-link:hover { background: var(--accent); color: #fff; }
+  .c-content .meta-note { color: #bbb; font-size: 0.68rem; font-style: italic; }
+
+  /* 卡片摘要（无完整文章时的fallback） */
+  .c-desc { font-size: 0.78rem; line-height: 1.6; margin-bottom: 0.75rem; }
+  .c-quote { font-family: 'Noto Serif SC', serif; font-size: 0.82rem; font-style: italic; color: var(--accent2); padding: 0.75rem 1rem; border-left: 3px solid var(--accent2); background: rgba(196,30,58,.04); margin-bottom: 0.5rem; }
+  .c-related { font-size: 0.7rem; }
+  .c-related-label { font-family: 'Space Mono', monospace; font-size: 0.52rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-right: 0.5rem; }
+  .c-related-item { display: inline-block; border: 1px solid var(--border); padding: 0.1rem 0.4rem; margin: 0.15rem; font-size: 0.65rem; }
+
+  /* ===== BOTTOM NAVIGATION ===== */
+  .bottom-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 2rem;
+    border-top: 4px solid var(--border);
+    padding-top: 1rem;
+    gap: 0.5rem;
+  }
+  .bottom-nav a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-decoration: none;
+    color: var(--ink);
+    border: 2px solid var(--border);
+    padding: 0.45rem 0.9rem;
+    background: #fff;
+    transition: all .1s;
+  }
+  .bottom-nav a:hover {
+    border-color: var(--accent);
+    transform: translate(-1px,-1px);
+  }
+  .bottom-nav .bn-prev { text-align: left; }
+  .bottom-nav .bn-next { text-align: right; margin-left: auto; }
+  .bottom-nav .bn-label {
+    display: block;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.45rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .bottom-nav .bn-back { text-align: left; }
+
+  @media (max-width: 900px) {
+    .bc-nav-panel { grid-template-columns: 100px 160px 160px; }
+  }
+
+  /* 回到顶部 */
+  .back-to-top {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    width: 44px;
+    height: 44px;
+    border: 3px solid var(--ink);
+    background: #fff;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    font-weight: 900;
+    color: var(--ink);
+    z-index: 999;
+    transition: all .12s;
+  }
+  .back-to-top:hover { background: var(--ink); color: #fff; }
+  .back-to-top.visible { display: flex; }
+{% endblock %}
+
+{% block content %}
+<!-- BREADCRUMB WITH CASCADE DROPDOWN -->
+<div class="node-breadcrumb">
+  <a href="{{ url_for('knowledge_base') }}">知识库</a>
+  <span style="opacity:0.35"> / </span>
+  <span style="font-weight:600">{% if page_type == 'industry' %}产业标的{% elif page_type == 'topic' %}专题整理{% else %}核心概念{% endif %}</span>
+  {% if node_info.is_child %}
+  <span style="opacity:0.35"> / </span>
+  {% if page_type == 'industry' %}
+  <a href="{{ url_for('industry_page', industry_id=node_info.parent_id) }}">{{ node_info.parent_name }}</a>
+  {% elif page_type == 'topic' %}
+  <a href="{{ url_for('topic_page', topic_id=node_info.parent_id) }}">{{ node_info.parent_name }}</a>
+  {% else %}
+  <a href="{{ url_for('node_page', node_id=node_info.parent_id) }}">{{ node_info.parent_name }}</a>
+  {% endif %}
+  <span style="opacity:0.35"> / </span>
+  <span style="color:var(--ink);font-weight:700">{{ node_info.name }}</span>
+  {% else %}
+  <span style="opacity:0.35"> / </span>
+  <span style="color:var(--ink);font-weight:700">{{ node_info.name }}</span>
+  {% endif %}
+
+  <div class="bc-nav-drop">
+    <div class="bc-nav-panel">
+      <!-- Col 1: Section selector -->
+      <div class="bc-nav-col" id="bcCol1">
+        <span class="bc-nav-col1-item sel" data-col1="core">核心概念</span>
+        <span class="bc-nav-col1-item" data-col1="industry">产业标的</span>
+        <span class="bc-nav-col1-item" data-col1="topics">专题整理</span>
+      </div>
+
+      <!-- Col 2: Second level (page-type aware) -->
+      <div class="bc-nav-col" id="bcCol2">
+        {% if page_type == 'node' %}
+        {% set layer_groups = {1: [], 2: [], 3: []} %}
+        {% for n in all_nodes_for_nav %}
+          {% if n.layer in [1, 2, 3] %}{% set _ = layer_groups[n.layer].append(n) %}{% endif %}
+        {% endfor %}
+        {% for layer_num in [1, 2, 3] %}
+        <div class="bc-nav-col2-group">
+          <div class="bc-nav-col2-gname">
+            <span class="sd-dot" style="background:{% if layer_num == 1 %}var(--accent){% elif layer_num == 2 %}var(--accent2){% else %}var(--accent3){% endif %}"></span>
+            {{ layers[layer_num].name }}
+          </div>
+          {% for n in layer_groups[layer_num] %}
+          <a href="{{ url_for('node_page', node_id=n.id) }}" class="bc-nav-col2-item{% if n.id == node_id %} cur{% endif %}" data-col2-id="{{ n.id }}" data-col2-type="node">{{ n.name }}</a>
+          {% endfor %}
+        </div>
+        {% endfor %}
+        {% elif page_type == 'industry' %}
+        {% for n in all_nodes_for_nav %}
+        <a href="{{ url_for('industry_page', industry_id=n.id) }}" class="bc-nav-col2-item{% if n.id == node_id %} cur{% endif %}" data-col2-id="{{ n.id }}" data-col2-type="ind">{{ n.name }}</a>
+        {% endfor %}
+        {% elif page_type == 'topic' %}
+        {% for n in all_nodes_for_nav %}
+        <a href="{{ url_for('topic_page', topic_id=n.id) }}" class="bc-nav-col2-item{% if n.id == node_id %} cur{% endif %}" data-col2-id="{{ n.id }}" data-col2-type="topic">{{ n.name }}</a>
+        {% endfor %}
+        {% endif %}
+      </div>
+
+      <!-- Col 3: Third level (initially: current node's sub-concepts) -->
+      <div class="bc-nav-col" id="bcCol3">
+        {% if node_concepts %}
+        <div class="bc-nav-col3-items">
+          {% for c in node_concepts %}
+          <span class="bc-nav-col3-item">{{ c.name }}</span>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="bc-nav-col3-placeholder">暂无子级</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- NODE CONTENT (unified card: header + body + collapse toggle) -->
+<div class="node-content collapsed" id="nodeContent" onclick="if(this.classList.contains('collapsed'))toggleNodeContent()">
+  <div class="nc-title-row" onclick="event.stopPropagation();toggleNodeContent()">
+    <h1 class="nc-title">{{ node_info.name }}</h1>
+    {% if node_info.layer != 0 %}<span class="node-layer-badge l{{ node_info.layer }}">{{ node_info.layer_name }}</span>{% endif %}
+    <span class="nc-toggle"><span class="nc-toggle-label">展开阅读 </span><span class="nc-toggle-arrow">&#x25BC;</span></span>
+  </div>
+  {% if card_meta.signature_quote %}
+  <div class="nc-signature">{{ card_meta.signature_quote|safe }}</div>
+  {% if card_meta.signature_attr %}
+  <div class="nc-attribution">——{{ card_meta.signature_attr }}</div>
+  {% endif %}
+  {% endif %}
+  {% if card_meta.word_freq %}
+  <div class="nc-meta">{{ card_meta.word_freq }}</div>
+  {% endif %}
+  <div class="node-content-body">
+    {{ content|safe }}
+  </div>
+  <div class="nc-collapse-bottom" onclick="event.stopPropagation();toggleNodeContent()">收起 &#x25B2;</div>
+</div>
+
+<!-- SUB-CONCEPT CARDS -->
+{% if node_concepts %}
+<div class="concept-section-title">子概念卡片 · {{ node_concepts|length }} 张</div>
+<div class="concept-list" id="conceptList">
+  {% for c in node_concepts %}
+  <div class="concept-card" data-index="{{ loop.index0 }}" onclick="selectConceptCard(this, {{ loop.index0 }})">
+    <div class="concept-card-header">
+      <span class="c-name">{{ c.name }}</span>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+<div class="concept-content-panel" id="conceptPanel">
+  <div class="c-content" id="conceptPanelContent"></div>
+  <div class="cc-collapse" onclick="closeConceptPanel()">收起 &#x25B2;</div>
+</div>
+{% endif %}
+
+<!-- BOTTOM NAVIGATION -->
+<div class="bottom-nav">
+  {% if node_info.is_child %}
+  {# 子卡：同级子概念之间导航 + 返回父卡 #}
+  {% if prev_node %}
+  {% if page_type == 'industry' %}
+  <a href="{{ url_for('industry_page', industry_id=node_info.parent_id, child_id=prev_node.id) }}" class="bn-prev">
+  {% elif page_type == 'topic' %}
+  <a href="{{ url_for('topic_page', topic_id=node_info.parent_id, child_id=prev_node.id) }}" class="bn-prev">
+  {% else %}
+  <a href="{{ url_for('node_page', node_id=node_info.parent_id, child_id=prev_node.id) }}" class="bn-prev">
+  {% endif %}
+    <span>
+      <span class="bn-label">← 上一子概念</span>
+      {{ prev_node.name }}
+    </span>
+  </a>
+  {% else %}
+  <span></span>
+  {% endif %}
+
+  {% if page_type == 'industry' %}
+  <a href="{{ url_for('industry_page', industry_id=node_info.parent_id) }}" class="bn-back">返回「{{ node_info.parent_name }}」</a>
+  {% elif page_type == 'topic' %}
+  <a href="{{ url_for('topic_page', topic_id=node_info.parent_id) }}" class="bn-back">返回「{{ node_info.parent_name }}」</a>
+  {% else %}
+  <a href="{{ url_for('node_page', node_id=node_info.parent_id) }}" class="bn-back">返回「{{ node_info.parent_name }}」</a>
+  {% endif %}
+
+  {% if next_node %}
+  {% if page_type == 'industry' %}
+  <a href="{{ url_for('industry_page', industry_id=node_info.parent_id, child_id=next_node.id) }}" class="bn-next">
+  {% elif page_type == 'topic' %}
+  <a href="{{ url_for('topic_page', topic_id=node_info.parent_id, child_id=next_node.id) }}" class="bn-next">
+  {% else %}
+  <a href="{{ url_for('node_page', node_id=node_info.parent_id, child_id=next_node.id) }}" class="bn-next">
+  {% endif %}
+    <span>
+      <span class="bn-label">下一子概念 →</span>
+      {{ next_node.name }}
+    </span>
+  </a>
+  {% else %}
+  <span></span>
+  {% endif %}
+  {% else %}
+  {# 父卡：父节点之间导航 #}
+  {% if is_first_in_section %}
+  <a href="{{ url_for('knowledge_base') }}" class="bn-back">
+    <span>
+      <span class="bn-label">← 返回</span>
+      知识库
+    </span>
+  </a>
+  {% elif prev_node %}
+  {% if page_type == 'industry' %}
+  <a href="{{ url_for('industry_page', industry_id=prev_node.id) }}" class="bn-prev">
+  {% elif page_type == 'topic' %}
+  <a href="{{ url_for('topic_page', topic_id=prev_node.id) }}" class="bn-prev">
+  {% else %}
+  <a href="{{ url_for('node_page', node_id=prev_node.id) }}" class="bn-prev">
+  {% endif %}
+    <span>
+      {% if page_type == 'industry' %}<span class="bn-label">← 上一产业</span>{% elif page_type == 'topic' %}<span class="bn-label">← 上一专题</span>{% else %}<span class="bn-label">← 上一节点</span>{% endif %}
+      {{ prev_node.name }}
+    </span>
+  </a>
+  {% else %}
+  <span></span>
+  {% endif %}
+
+  {% if next_node %}
+  {% if page_type == 'industry' %}
+  <a href="{{ url_for('industry_page', industry_id=next_node.id) }}" class="bn-next">
+  {% elif page_type == 'topic' %}
+  <a href="{{ url_for('topic_page', topic_id=next_node.id) }}" class="bn-next">
+  {% else %}
+  <a href="{{ url_for('node_page', node_id=next_node.id) }}" class="bn-next">
+  {% endif %}
+    <span>
+      {% if page_type == 'industry' %}<span class="bn-label">下一产业 →</span>{% elif page_type == 'topic' %}<span class="bn-label">下一专题 →</span>{% else %}<span class="bn-label">下一节点 →</span>{% endif %}
+      {{ next_node.name }}
+    </span>
+  </a>
+  {% else %}
+  <span></span>
+  {% endif %}
+  {% endif %}
+</div>
+
+<div class="back-to-top" id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="回到顶部">&uarr;</div>
+<script>
+(function() {
+  var btn = document.getElementById('backToTop');
+  window.addEventListener('scroll', function() {
+    btn.classList.toggle('visible', window.scrollY > 400);
+  });
+})();
+</script>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// ===== DATA FOR CASCADE DROPDOWN =====
+const ALL_NODES = {{ all_nodes_for_nav | tojson | safe }};
+const CORE_NODES = {{ core_nodes_for_nav | tojson | safe }};
+const IND_NODES = {{ ind_nodes_for_nav | tojson | safe }};
+const TOPIC_NODES = {{ topic_nodes_for_nav | tojson | safe }};
+const INDUSTRIES_DATA = {{ industries | tojson | safe }};
+const TOPICS_DATA = {{ topics | tojson | safe }};
+const LAYERS_DATA = {{ layers | tojson | safe }};
+const CURRENT_NODE_ID = "{{ node_id }}";
+const CURRENT_PAGE_TYPE = "{{ page_type or 'node' }}";
+
+// ===== COLLAPSIBLE CONTENT =====
+const nodeContent = document.getElementById('nodeContent');
+
+function toggleNodeContent() {
+  const wasCollapsed = nodeContent.classList.contains('collapsed');
+  nodeContent.classList.toggle('collapsed');
+  const label = document.querySelector('.nc-toggle-label');
+  if (label) {
+    label.textContent = wasCollapsed ? '收起 ' : '展开阅读 ';
+  }
+  // 展开时平滑滚动到父卡顶部
+  if (wasCollapsed) {
+    setTimeout(function() {
+      nodeContent.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 50);
+  }
+}
+
+// ===== CONCEPT CARD SELECTION =====
+const CONCEPT_DATA = {{ node_concepts | tojson | safe }};
+
+function selectConceptCard(card, index) {
+  const panel = document.getElementById('conceptPanel');
+  const content = document.getElementById('conceptPanelContent');
+
+  if (card.classList.contains('active')) {
+    closeConceptPanel();
+    return;
+  }
+
+  document.querySelectorAll('.concept-card').forEach(c => c.classList.remove('active'));
+  card.classList.add('active');
+
+  const data = CONCEPT_DATA[index];
+  if (data.content) {
+    content.innerHTML = data.content;
+  } else {
+    let h = '<div class="c-desc">' + data.desc + '</div>';
+    if (data.quote) h += '<div class="c-quote">"' + data.quote + '"</div>';
+    if (data.related && data.related.length) {
+      h += '<div class="c-related"><span class="c-related-label">关联概念</span>';
+      data.related.forEach(function(r) { h += '<span class="c-related-item">' + r + '</span>'; });
+      h += '</div>';
+    }
+    content.innerHTML = h;
+  }
+  panel.classList.add('open');
+}
+
+function closeConceptPanel() {
+  document.querySelectorAll('.concept-card').forEach(c => c.classList.remove('active'));
+  document.getElementById('conceptPanel').classList.remove('open');
+}
+
+// ===== CASCADE DROPDOWN HOVER LOGIC =====
+const bcCol1 = document.getElementById('bcCol1');
+const bcCol2 = document.getElementById('bcCol2');
+const bcCol3 = document.getElementById('bcCol3');
+const pageTypeToCol1 = { node: 'core', industry: 'industry', topic: 'topics' };
+let activeSection = pageTypeToCol1[CURRENT_PAGE_TYPE] || 'core';
+
+// Col2 builders
+function buildCol2Core() {
+  let h = '';
+  const nodes = CORE_NODES.length > 0 ? CORE_NODES : ALL_NODES;
+  [1, 2, 3].forEach(l => {
+    const layerNodes = nodes.filter(n => n.layer === l);
+    if (!layerNodes.length) return;
+    const lInfo = LAYERS_DATA[l];
+    const colorMap = {1: 'var(--accent)', 2: 'var(--accent2)', 3: 'var(--accent3)'};
+    h += '<div class="bc-nav-col2-group">';
+    h += '<div class="bc-nav-col2-gname"><span class="sd-dot" style="background:' + colorMap[l] + '"></span>' + lInfo.name + '</div>';
+    layerNodes.forEach(n => {
+      const isCur = (n.id === CURRENT_NODE_ID && CURRENT_PAGE_TYPE === 'node');
+      h += '<a href="/node/' + n.id + '" class="bc-nav-col2-item' + (isCur ? ' cur' : '') + '" data-col2-id="' + n.id + '" data-col2-type="node">' + n.name + '</a>';
+    });
+    h += '</div>';
+  });
+  return h;
+}
+
+function buildCol2Industry() {
+  const nodes = IND_NODES.length > 0 ? IND_NODES : ALL_NODES;
+  if (nodes.length > 0 && nodes[0].layer === 0 && IND_NODES.length > 0) {
+    let h = '<div class="bc-nav-col2-items">';
+    nodes.forEach(n => {
+      const isCur = (n.id === CURRENT_NODE_ID && CURRENT_PAGE_TYPE === 'industry');
+      h += '<a href="/industry/' + n.id + '" class="bc-nav-col2-item' + (isCur ? ' cur' : '') + '" data-col2-id="' + n.id + '" data-col2-type="ind">' + n.name + '</a>';
+    });
+    h += '</div>';
+    return h;
+  }
+  let h = '<div class="bc-nav-col2-items">';
+  INDUSTRIES_DATA.forEach((ind, i) => {
+    h += '<a href="/industry/' + (ind.id || '') + '" class="bc-nav-col2-item" data-col2-id="' + (ind.id || ('ind-' + i)) + '" data-col2-type="ind" data-col2-subs="' + (ind.subs || '').replace(/"/g, '&quot;') + '">' + ind.name + '</a>';
+  });
+  h += '</div>';
+  return h;
+}
+
+function buildCol2Topics() {
+  const nodes = TOPIC_NODES.length > 0 ? TOPIC_NODES : ALL_NODES;
+  if (nodes.length > 0 && nodes[0].layer === 0 && TOPIC_NODES.length > 0) {
+    let h = '<div class="bc-nav-col2-items">';
+    nodes.forEach(n => {
+      const isCur = (n.id === CURRENT_NODE_ID && CURRENT_PAGE_TYPE === 'topic');
+      h += '<a href="/topic/' + n.id + '" class="bc-nav-col2-item' + (isCur ? ' cur' : '') + '" data-col2-id="' + n.id + '" data-col2-type="topic">' + n.name + '</a>';
+    });
+    h += '</div>';
+    return h;
+  }
+  let h = '<div class="bc-nav-col2-items">';
+  TOPICS_DATA.forEach((t, i) => {
+    h += '<a href="/topic/' + (t.id || '') + '" class="bc-nav-col2-item" data-col2-id="' + (t.id || ('topic-' + i)) + '" data-col2-type="topic" data-col2-subs="' + (t.desc || '').replace(/"/g, '&quot;') + '">' + t.name + '</a>';
+  });
+  h += '</div>';
+  return h;
+}
+
+function buildCol2(sectionId) {
+  if (sectionId === 'core') return buildCol2Core();
+  if (sectionId === 'industry') return buildCol2Industry();
+  if (sectionId === 'topics') return buildCol2Topics();
+  return '';
+}
+
+// Col3 builder
+function buildCol3(sectionId, itemId, itemType) {
+  if (!itemId) return '<div class="bc-nav-col3-placeholder">悬停节点查看子级</div>';
+  if (itemType === 'node') {
+    const node = CORE_NODES.find(n => n.id === itemId);
+    if (!node || !node.concepts || !node.concepts.length) return '<div class="bc-nav-col3-placeholder">暂无子级</div>';
+    let h = '<div class="bc-nav-col3-items">';
+    node.concepts.forEach(c => {
+      h += '<span class="bc-nav-col3-item">' + c.name + '</span>';
+    });
+    h += '</div>';
+    return h;
+  }
+  if (itemType === 'ind') {
+    const indNode = IND_NODES.find(n => n.id === itemId);
+    if (indNode && indNode.concepts && indNode.concepts.length) {
+      let h = '<div class="bc-nav-col3-items">';
+      indNode.concepts.forEach(c => { h += '<span class="bc-nav-col3-item">' + c.name + '</span>'; });
+      h += '</div>';
+      return h;
+    }
+    const el = document.querySelector('[data-col2-id="' + itemId + '"]');
+    const subs = el ? el.getAttribute('data-col2-subs') : '';
+    if (subs) {
+      return '<div class="bc-nav-col3-items">' + subs.split(' · ').map(s => '<span class="bc-nav-col3-item" style="cursor:default">' + s + '</span>').join('') + '</div>';
+    }
+    return '<div class="bc-nav-col3-placeholder">暂无子级</div>';
+  }
+  if (itemType === 'topic') {
+    const topicNode = TOPIC_NODES.find(n => n.id === itemId);
+    if (topicNode && topicNode.concepts && topicNode.concepts.length) {
+      let h = '<div class="bc-nav-col3-items">';
+      topicNode.concepts.forEach(c => { h += '<span class="bc-nav-col3-item">' + c.name + '</span>'; });
+      h += '</div>';
+      return h;
+    }
+    const el = document.querySelector('[data-col2-id="' + itemId + '"]');
+    const desc = el ? el.getAttribute('data-col2-subs') : '';
+    return '<div class="bc-nav-col3-placeholder" style="font-style:normal">' + desc + '</div>';
+  }
+  return '<div class="bc-nav-col3-placeholder">悬停节点查看子级</div>';
+}
+
+// Col1 hover → update col2, reset col3
+if (bcCol1) {
+  bcCol1.addEventListener('mouseover', (e) => {
+    const item = e.target.closest('.bc-nav-col1-item');
+    if (!item) return;
+    const secId = item.getAttribute('data-col1');
+    if (secId === activeSection) return;
+    activeSection = secId;
+
+    bcCol1.querySelectorAll('.bc-nav-col1-item').forEach(el => el.classList.remove('sel'));
+    item.classList.add('sel');
+
+    bcCol2.innerHTML = buildCol2(secId);
+    bcCol3.innerHTML = '<div class="bc-nav-col3-placeholder">悬停节点查看子级</div>';
+  });
+}
+
+// Col2 hover → update col3
+if (bcCol2) {
+  bcCol2.addEventListener('mouseover', (e) => {
+    const item = e.target.closest('.bc-nav-col2-item');
+    if (!item) return;
+
+    bcCol2.querySelectorAll('.bc-nav-col2-item').forEach(el => el.classList.remove('sel'));
+    item.classList.add('sel');
+
+    const itemId = item.getAttribute('data-col2-id');
+    const itemType = item.getAttribute('data-col2-type');
+    bcCol3.innerHTML = buildCol3(activeSection, itemId, itemType);
+  });
+}
+
+// Initialize col1/col2 based on page_type
+if (bcCol1) {
+  const initItem = bcCol1.querySelector('[data-col1="' + activeSection + '"]');
+  if (initItem) initItem.classList.add('sel');
+  if (bcCol2) bcCol2.innerHTML = buildCol2(activeSection);
+}
+</script>
+{% endblock %}

@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+
+{% block title %}关于本站 · 冰冰小美知识库{% endblock %}
+
+{% block extra_css %}
+  .page-header {
+    margin-bottom: 1.5rem;
+    border-bottom: 4px solid var(--border);
+    padding-bottom: 1rem;
+  }
+  .page-header .breadcrumb {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--muted);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+  .page-header .breadcrumb a {
+    color: var(--ink);
+    text-decoration: none;
+    font-weight: 700;
+  }
+  .page-header h1 {
+    font-weight: 900;
+    font-size: clamp(1.5rem, 3vw, 2rem);
+  }
+
+  .about-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    align-items: start;
+  }
+  @media (max-width: 750px) {
+    .about-columns { grid-template-columns: 1fr; }
+  }
+
+  .about-col {
+    background: #fff;
+    border: 3px solid var(--border);
+    padding: 1.5rem;
+    font-size: 0.85rem;
+    line-height: 1.75;
+  }
+  .about-col h2 {
+    font-weight: 900;
+    font-size: 1rem;
+    margin: 1.25rem 0 0.4rem;
+    padding-top: 1rem;
+    border-top: 2px solid var(--border);
+  }
+  .about-col h2:first-of-type { border-top: none; padding-top: 0; margin-top: 0; }
+  .about-col p { margin-bottom: 0.6rem; }
+  .about-col a {
+    color: var(--accent);
+    font-weight: 600;
+    text-underline-offset: 3px;
+  }
+  .about-col ul {
+    padding-left: 1.2rem;
+    margin-bottom: 0.6rem;
+  }
+  .about-col li { margin-bottom: 0.2rem; }
+
+  .changelog-entry {
+    border-bottom: 1px solid rgba(0,0,0,.06);
+    padding: 0.6rem 0;
+  }
+  .changelog-entry:last-of-type { border-bottom: none; }
+  .changelog-entry .cl-date {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.52rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.15rem;
+  }
+  .changelog-entry .cl-title {
+    font-weight: 700;
+    font-size: 0.82rem;
+    margin-bottom: 0.1rem;
+  }
+  .changelog-entry ul {
+    padding-left: 1rem;
+    font-size: 0.75rem;
+    color: #555;
+    line-height: 1.55;
+  }
+  .changelog-entry li { margin-bottom: 0.05rem; }
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="breadcrumb"><a href="{{ url_for('index') }}">首页</a> / 关于本站</div>
+  <h1>关于本站</h1>
+</div>
+
+<div class="about-columns">
+  <!-- 左栏：作者写的 -->
+  <div class="about-col">
+    <h2>这个网站是什么</h2>
+    <p>冰冰小美知识库——把雪球用户 <strong>冰冰小美</strong> 三年来的 9,203 条帖子、120 篇专栏，整理成一个可浏览、可关联、可追问的知识网络。</p>
+    <p>这里没有荐股，没有战法口诀。只有一个人用三年时间磨出来的一套知识体系——<strong>国运 → 竞争格局 → 流动性 → 情绪</strong>，四层传导，核心概念相互链接。</p>
+
+    <h2>网站访问量</h2>
+    <p>累计访客 <strong id="visit-counter">...</strong> 人次。</p>
+
+    <h2>作者的一些话</h2>
+    <p>我是 Daniel。</p>
+    <p>做这个网站的初心很简单：冰美的帖子太碎片化了。一条条刷过去，容易看过后就忘。但她的体系其实非常完整——从国运到产业、从流动性到情绪周期、从亏钱效应到做空认知——每一块都和其他部分咬合。</p>
+    <p>我想把这些碎片拼起来，让它们变成一张可以随时查阅的地图。</p>
+    <p>如果你也是冰美的读者，希望这个网站能帮你更系统地理解她的框架。如果你刚接触她的内容，欢迎从<strong>核心概念卡片</strong>开始——那是整个体系的骨架。</p>
+
+    <h2>技术说明</h2>
+    <ul>
+      <li>后端：Flask + Jinja2</li>
+      <li>内容：Markdown（Obsidian vault）</li>
+      <li>AI 问答：DeepSeek（即将上线）</li>
+      <li>设计：粗野风格（Brutalist Web Design）</li>
+      <li>字体：Noto Sans SC + Space Mono</li>
+    </ul>
+
+    <h2>致谢</h2>
+    <p>感谢冰冰小美三年来的分享，以及允许我整理她的内容。</p>
+    <p>感谢所有在雪球上与她讨论交流的球友。</p>
+  </div>
+
+  <!-- 右栏：更新日志 -->
+  <div class="about-col">
+    <h2>更新日志</h2>
+    <div class="changelog-entry">
+      <div class="cl-date">2026.05.23</div>
+      <div class="cl-title">专栏同步 + 专题自动发现 + 页面打磨</div>
+      <ul>
+        <li>专栏文章 101→120 篇（爬虫同步新增 19 篇）</li>
+        <li>专题整理从硬编码改为自动扫描 Obsidian 目录（4→6 个专题，新增时间窗口、铜）</li>
+        <li>首页英雄区文案重写，专栏数更新</li>
+        <li>侧边栏精简：删除搜索框，功能改为四大项（知识库/看看帖子/工作面板/AI 冰美）</li>
+        <li>看看帖子页补回一键下载 md 按钮</li>
+        <li>知识库说明区填充实际描述</li>
+        <li>关于本站 & 更新日志合并为双栏页面</li>
+        <li>侧边栏头像更新（无边框正方形）+ 雪球链接修正</li>
+      </ul>
+    </div>
+
+    <div class="changelog-entry">
+      <div class="cl-date">2026.05.22</div>
+      <div class="cl-title">看看帖子功能上线</div>
+      <ul>
+        <li>「随便看看」— 卡片叠放随机阅读核心文章</li>
+        <li>「时间线阅读」— 无限滚动浏览全部/重点帖子，支持关键词搜索</li>
+        <li>「核心文章目录」— 按来源分 5 组浏览 350 篇核心文章</li>
+        <li>「帖子阅读页」— 单篇帖子全文阅读</li>
+        <li>概念词频 TOP 10 展示，点击可筛选</li>
+        <li>「一键打包下载」— 帖子/知识库各支持导出为 .md 文件</li>
+      </ul>
+    </div>
+
+    <div class="changelog-entry">
+      <div class="cl-date">2026.05.20</div>
+      <div class="cl-title">知识库总览 & 概念网络上线</div>
+      <ul>
+        <li>首页 + 知识库总览页面</li>
+        <li>9 个核心概念父卡 + 38 张子概念卡片，三层结构</li>
+        <li>8 大产业标的 + 4 个专题整理</li>
+        <li>面包屑级联下拉导航</li>
+        <li>粗野风格设计定稿：深海军蓝侧边栏 + 奶油纸主区域 + 三层色系统</li>
+      </ul>
+    </div>
+
+    <div class="changelog-entry">
+      <div class="cl-date">2026.05.16</div>
+      <div class="cl-title">项目启动</div>
+      <ul>
+        <li>确立输入 → 整理 → 输出三大板块</li>
+        <li>知识结构拓扑框架确定</li>
+        <li>Flask + Obsidian vault 技术选型</li>
+      </ul>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// 访问计数器（fetch Workers API）
+(async function() {
+  const el = document.getElementById('visit-counter');
+  if (!el) return;
+
+  const API = window.location.hostname === 'localhost' ? '' : 'https://bbxmkb.cn';
+
+  try {
+    const resp = await fetch(API + '/api/counter');
+    const data = await resp.json();
+    el.textContent = (data.count || 0).toLocaleString();
+
+    // 去重：同一浏览器只计一次
+    if (!localStorage.getItem('kb-counted')) {
+      localStorage.setItem('kb-counted', '1');
+      fetch(API + '/api/counter', { method: 'POST' }).catch(() => {});
+    }
+  } catch(e) {
+    el.textContent = '...';
+  }
+})();
+</script>
+{% endblock %}

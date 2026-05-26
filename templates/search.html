@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block title %}{% if query %}{{ query }} · 搜索{% else %}搜索 · 冰冰小美知识库{% endif %}{% endblock %}
+
+{% block extra_css %}
+  .page-header {
+    margin-bottom: 1.5rem;
+    border-bottom: 4px solid var(--border);
+    padding-bottom: 1rem;
+  }
+  .page-header .breadcrumb {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--muted);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+  .page-header .breadcrumb a {
+    color: var(--ink);
+    text-decoration: none;
+    font-weight: 700;
+  }
+  .page-header h1 {
+    font-weight: 900;
+    font-size: clamp(1.5rem, 3vw, 2rem);
+  }
+  .search-box-wrap {
+    margin-bottom: 2rem;
+  }
+  .search-box-wrap input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 3px solid var(--border);
+    font-size: 1rem;
+    font-family: 'Noto Sans SC', sans-serif;
+    background: #fff;
+  }
+  .search-box-wrap input:focus { outline: none; border-color: var(--accent); }
+  .result-item {
+    border: 3px solid var(--border);
+    background: #fff;
+    padding: 1rem 1.25rem;
+    margin-bottom: 0.75rem;
+  }
+  .result-item .r-title {
+    font-weight: 700;
+    font-size: 0.9rem;
+    margin-bottom: 0.3rem;
+  }
+  .result-item .r-title a {
+    color: var(--ink);
+    text-decoration: none;
+  }
+  .result-item .r-title a:hover { color: var(--accent); text-decoration: underline; }
+  .result-item .r-context {
+    font-size: 0.78rem;
+    color: var(--muted);
+    margin-bottom: 0.3rem;
+  }
+  .result-item .r-path {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.55rem;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+  }
+  .no-results {
+    padding: 2rem;
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+
+  /* 回到顶部 */
+  .back-to-top {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    width: 44px;
+    height: 44px;
+    border: 3px solid var(--ink);
+    background: #fff;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    font-weight: 900;
+    color: var(--ink);
+    z-index: 999;
+    transition: all .12s;
+  }
+  .back-to-top:hover { background: var(--ink); color: #fff; }
+  .back-to-top.visible { display: flex; }
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="breadcrumb"><a href="{{ url_for('index') }}">首页</a> / 搜索</div>
+  <h1>{% if query %}搜索：{{ query }}{% else %}搜索{% endif %}</h1>
+</div>
+
+<div class="search-box-wrap">
+  <form action="{{ url_for('search') }}" method="get">
+    <input type="text" name="q" placeholder="搜索全部笔记..." value="{{ query or '' }}" autofocus>
+  </form>
+</div>
+
+{% if query %}
+  {% if results %}
+    <p style="font-size:0.8rem;color:var(--muted);margin-bottom:1rem;">找到 {{ results|length }} 条结果</p>
+    {% for r in results %}
+    <div class="result-item">
+      <div class="r-title"><a href="{{ r.url }}">{{ r.title }}</a></div>
+      {% if r.context %}<div class="r-context">...{{ r.context }}...</div>{% endif %}
+      <div class="r-path">{{ r.path }}</div>
+    </div>
+    {% endfor %}
+  {% else %}
+    <div class="no-results">没找到相关内容</div>
+  {% endif %}
+{% endif %}
+
+<div class="back-to-top" id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="回到顶部">&uarr;</div>
+<script>
+(function() {
+  var btn = document.getElementById('backToTop');
+  window.addEventListener('scroll', function() {
+    btn.classList.toggle('visible', window.scrollY > 400);
+  });
+})();
+</script>
+{% endblock %}

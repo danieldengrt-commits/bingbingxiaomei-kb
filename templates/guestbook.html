@@ -1,0 +1,225 @@
+{% extends "base.html" %}
+
+{% block title %}留言板 · 冰冰小美知识库{% endblock %}
+
+{% block extra_css %}
+  .page-header {
+    margin-bottom: 1.5rem;
+    border-bottom: 4px solid var(--border);
+    padding-bottom: 1rem;
+  }
+  .page-header .breadcrumb {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--muted);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+  .page-header .breadcrumb a {
+    color: var(--ink);
+    text-decoration: none;
+    font-weight: 700;
+  }
+  .page-header h1 {
+    font-weight: 900;
+    font-size: clamp(1.5rem, 3vw, 2rem);
+  }
+
+  .gb-write {
+    background: #fff;
+    border: 3px solid var(--border);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  .gb-write h2 {
+    font-weight: 900;
+    font-size: 0.95rem;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--border);
+  }
+  .gb-write textarea {
+    width: 100%;
+    min-height: 100px;
+    padding: 0.6rem 0.75rem;
+    border: 2px solid var(--border);
+    font-family: 'Noto Sans SC', sans-serif;
+    font-size: 0.85rem;
+    line-height: 1.6;
+    resize: vertical;
+    outline: none;
+    background: var(--paper);
+  }
+  .gb-write textarea:focus { border-color: var(--accent); }
+  .gb-write button {
+    margin-top: 0.5rem;
+    padding: 0.45rem 1.2rem;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    background: var(--ink);
+    color: #fff;
+    border: none;
+    cursor: pointer;
+  }
+  .gb-write button:hover { opacity: 0.85; }
+  .gb-hint {
+    font-size: 0.7rem;
+    color: var(--muted);
+    margin-top: 0.5rem;
+  }
+
+  .gb-messages {
+    background: #fff;
+    border: 3px solid var(--border);
+    padding: 1.5rem;
+  }
+  .gb-messages h2 {
+    font-weight: 900;
+    font-size: 0.95rem;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--border);
+  }
+  .msg-item {
+    padding: 0.65rem 0;
+    border-bottom: 1px solid rgba(0,0,0,.06);
+    font-size: 0.82rem;
+    line-height: 1.65;
+    position: relative;
+  }
+  .msg-item:last-child { border-bottom: none; }
+  .msg-time {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.5rem;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    margin-bottom: 0.15rem;
+  }
+  .msg-body { padding-right: 3rem; }
+  .msg-del {
+    position: absolute;
+    right: 0;
+    top: 0.65rem;
+    font-size: 0.6rem;
+    color: #ccc;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 0.15rem 0.3rem;
+  }
+  .msg-del:hover { color: var(--accent2); }
+  .msg-empty {
+    color: var(--muted);
+    font-size: 0.8rem;
+    font-style: italic;
+  }
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="breadcrumb"><a href="{{ url_for('index') }}">首页</a> / 留言板</div>
+  <h1>留言板</h1>
+</div>
+
+<!-- 写留言 -->
+<div class="gb-write">
+  <h2>写留言</h2>
+  <div class="gb-form-row" style="margin-bottom:0.5rem;">
+    <input type="text" id="gb-name" placeholder="你的昵称" maxlength="50"
+      style="width:100%;padding:0.45rem 0.6rem;border:2px solid var(--border);font-family:'Noto Sans SC',sans-serif;font-size:0.82rem;outline:none;background:var(--paper);margin-bottom:0.5rem;">
+  </div>
+  <textarea id="gb-message" placeholder="写下你的想法..." required></textarea>
+  <button id="gb-submit" type="button">提交</button>
+  <span id="gb-status" style="display:none;margin-left:0.75rem;font-size:0.72rem;"></span>
+  <div class="gb-hint">提交后立即显示，没有编辑功能。</div>
+</div>
+
+<!-- 留言列表 -->
+<div class="gb-messages">
+  <h2 id="gb-title" style="border-bottom:2px solid var(--border);padding-bottom:0.5rem;margin-bottom:0.5rem;">全部留言</h2>
+  <div id="gb-list"></div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function() {
+  const API = window.location.hostname === 'localhost' ? '' : 'https://bbxmkb.cn';
+  const listEl = document.getElementById('gb-list');
+  const titleEl = document.getElementById('gb-title');
+  const nameEl = document.getElementById('gb-name');
+  const msgEl = document.getElementById('gb-message');
+  const submitBtn = document.getElementById('gb-submit');
+  const statusEl = document.getElementById('gb-status');
+
+  function showStatus(text, isError) {
+    statusEl.textContent = text;
+    statusEl.style.color = isError ? 'var(--accent2)' : 'var(--accent3)';
+    statusEl.style.display = 'inline';
+    setTimeout(() => { statusEl.style.display = 'none'; }, 3000);
+  }
+
+  function formatTime(ts) {
+    const d = new Date(ts + 'Z');
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0') + ' ' + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+  }
+
+  async function loadMessages() {
+    try {
+      const resp = await fetch(API + '/api/guestbook');
+      const msgs = await resp.json();
+      titleEl.textContent = '全部留言（' + msgs.length + ' 条）';
+      if (!msgs.length) {
+        listEl.innerHTML = '<div class="msg-empty">还没有留言，来说点什么吧。</div>';
+        return;
+      }
+      listEl.innerHTML = msgs.map(m => '<div class="msg-item"><div class="msg-time">' + formatTime(m.created_at) + ' — ' + escapeHtml(m.name) + '</div><div class="msg-body">' + escapeHtml(m.message) + '</div></div>').join('');
+    } catch(e) {
+      listEl.innerHTML = '<div class="msg-empty">加载失败，请刷新页面。</div>';
+    }
+  }
+
+  function escapeHtml(s) {
+    const div = document.createElement('div');
+    div.textContent = s;
+    return div.innerHTML;
+  }
+
+  submitBtn.addEventListener('click', async function() {
+    const name = nameEl.value.trim();
+    const message = msgEl.value.trim();
+    if (!name) { showStatus('请填写昵称', true); return; }
+    if (!message) { showStatus('请填写留言内容', true); return; }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = '提交中...';
+
+    try {
+      const resp = await fetch(API + '/api/guestbook', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, message }),
+      });
+      const data = await resp.json();
+      if (data.success) {
+        msgEl.value = '';
+        showStatus('提交成功！');
+        loadMessages();
+      } else {
+        showStatus(data.error || '提交失败', true);
+      }
+    } catch(e) {
+      showStatus('网络错误，请稍后再试', true);
+    }
+
+    submitBtn.disabled = false;
+    submitBtn.textContent = '提交';
+  });
+
+  loadMessages();
+})();
+</script>
+{% endblock %}

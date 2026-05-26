@@ -1,0 +1,32 @@
+# Cloudflare 部署缓存（含账号信息）
+.wrangler/
+
+# 静态站点生成输出
+site/
+
+# ChromaDB 向量数据库
+data/rag_db/
+
+# Obsidian vault 符号链接
+vault/
+
+# Python
+venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# macOS
+.DS_Store
+
+# 环境变量（含密钥）
+.env
+*.env
+!*.env.example
+
+# 个人照片
+static/images/daniel.jpg
+
+# 临时文件
+/tmp/
+*.tar.gz

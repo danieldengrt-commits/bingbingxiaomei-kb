@@ -1,0 +1,349 @@
+{% extends "base.html" %}
+
+{% block title %}随便看看 · 冰冰小美知识库{% endblock %}
+
+{% block extra_css %}
+  .random-header {
+    margin-bottom: 1.5rem;
+  }
+  .random-header .breadcrumb {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--muted);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+  .random-header .breadcrumb a {
+    color: var(--ink);
+    text-decoration: none;
+    font-weight: 700;
+  }
+  .random-header .breadcrumb a:hover { text-decoration: underline; text-underline-offset: 3px; }
+  .random-header h1 {
+    font-weight: 900;
+    font-size: clamp(1.5rem, 3vw, 2rem);
+  }
+
+  /* 卡片叠放容器 */
+  .card-stack {
+    margin-bottom: 1.5rem;
+  }
+  .card-stack-inner {
+    display: grid;
+    grid-template: 1fr / 1fr;
+    width: 100%;
+  }
+  .card-stack-inner > * {
+    grid-area: 1 / 1;
+  }
+
+  .post-card {
+    border: 4px solid var(--border);
+    background: #fff;
+    padding: 1.5rem 1.75rem;
+    transition: all .35s cubic-bezier(.4,0,.2,1);
+    z-index: 1;
+    opacity: 1;
+    transform: translateY(0);
+  }
+  /* 前一张（上方露出） */
+  .post-card.prev-card {
+    z-index: 0;
+    opacity: 0.4;
+    transform: translateY(-12px);
+    pointer-events: none;
+  }
+  /* 下一张（下方露出） */
+  .post-card.next-card {
+    z-index: 0;
+    opacity: 0.4;
+    transform: translateY(12px);
+    pointer-events: none;
+  }
+  /* 滑出动画 */
+  .post-card.slide-out-left {
+    transform: translateX(120%);
+    opacity: 0;
+    z-index: 0;
+  }
+  /* 新卡进入 */
+  .post-card.slide-in {
+    transform: translateY(-8px);
+    opacity: 0;
+    z-index: 1;
+  }
+
+  .post-card .pc-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 0.75rem;
+    flex-wrap: wrap;
+  }
+  .post-card .pc-date {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+  .post-card .pc-source-tag {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.48rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0.15rem 0.45rem;
+    border: 2px solid var(--accent2);
+    color: var(--accent2);
+    text-decoration: none;
+  }
+  .post-card .pc-source-tag.column { border-color: var(--accent); color: var(--accent); }
+  .post-card .pc-source-tag.trade { border-color: var(--accent3); color: var(--accent3); }
+  .post-card .pc-content {
+    font-size: 0.85rem;
+    line-height: 1.75;
+    max-height: 55vh;
+    overflow-y: auto;
+    padding-right: 0.5rem;
+  }
+  .post-card .pc-content h1 { display: none; }
+  .post-card .pc-content blockquote:first-of-type { display: none; }
+  .post-card .pc-content hr { display: none; }
+  .post-card .pc-content h3 { font-weight: 700; font-size: 0.95rem; margin: 0.6rem 0 0.2rem; color: #1e4a6b; }
+  .post-card .pc-content h2 { font-weight: 900; font-size: 1rem; margin: 0.6rem 0 0.2rem; color: var(--accent); padding-top: 0.5rem; border-top: 2px solid var(--border); }
+  .post-card .pc-content h2:first-of-type { border-top: none; padding-top: 0; }
+  .post-card .pc-content strong { color: #000; font-weight: 900; }
+  .post-card .pc-content em { color: var(--accent2); font-style: normal; }
+  .post-card .pc-content a { color: var(--accent); font-weight: 600; text-decoration: none; border-bottom: 2px solid var(--accent); }
+  .post-card .pc-content ul, .post-card .pc-content ol { padding-left: 1.3rem; margin: 0.4rem 0; }
+  .post-card .pc-content li { margin-bottom: 0.15rem; }
+  .post-card .pc-content table { width: 100%; border-collapse: collapse; margin: 0.5rem 0; font-size: 0.72rem; }
+  .post-card .pc-content thead th { font-family: 'Space Mono', monospace; font-size: 0.5rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); text-align: left; padding: 0.3rem 0.5rem; border-bottom: 2px solid var(--border); }
+  .post-card .pc-content tbody td { padding: 0.25rem 0.5rem; border-bottom: 1px solid #ddd; }
+  .post-card .pc-content blockquote { border-left: 3px solid var(--accent2); padding: 0.3rem 0 0.3rem 0.75rem; margin: 0.5rem 0; background: rgba(196,30,58,.03); font-size: 0.85rem; color: #8b1a2b; }
+  .post-card .pc-content code { font-family: 'Space Mono', monospace; font-size: 0.7rem; background: var(--paper); padding: 0.05rem 0.3rem; border: 1px solid #ddd; }
+  .post-card .pc-content pre { font-family: 'Space Mono', monospace; font-size: 0.6rem; line-height: 1.5; background: var(--paper); border: 2px solid var(--border); padding: 0.6rem; margin: 0.5rem 0; overflow-x: auto; white-space: pre; }
+  .post-card .pc-content pre code { font-size: inherit; background: none; padding: 0; border: none; }
+  .post-card .pc-content p { margin-bottom: 0.5rem; }
+
+  .random-actions {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+  .btn-next {
+    padding: 0.4rem 1rem;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.58rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    font-weight: 700;
+    transition: opacity .15s;
+  }
+  .btn-next:hover { opacity: 0.85; }
+  .btn-next:disabled { opacity: 0.4; cursor: not-allowed; }
+  .counter {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    display: flex;
+    align-items: center;
+  }
+
+  .random-loading {
+    text-align: center;
+    padding: 2rem;
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+  }
+
+  @media (max-width: 900px) {
+    .post-card .pc-content { max-height: 45vh; }
+  }
+{% endblock %}
+
+{% block content %}
+<!-- HEADER -->
+<div class="random-header">
+  <div class="breadcrumb"><a href="{{ url_for('posts_landing') }}">看看帖子</a> / 随便看看</div>
+  <h1>随便看看</h1>
+</div>
+
+<!-- CARD STACK -->
+<div class="card-stack" id="cardStack">
+  <div class="card-stack-inner" id="cardStackInner">
+    <!-- 当前卡片由 JS 渲染 -->
+  </div>
+</div>
+
+<!-- ACTIONS -->
+<div class="random-actions">
+  <button class="btn-next" id="btnPrev" onclick="prevCard()" disabled>上一张</button>
+  <button class="btn-next" id="btnNext" onclick="nextCard()">换一篇 &#x2192;</button>
+  <span class="counter" id="counter"></span>
+</div>
+
+<script>
+var apiBase = window.location.hostname === 'localhost' ? '' : 'https://api.bbxmkb.cn';
+const CORE_TOTAL = {{ core_total|default(350) }};
+let readCount = 0;
+let historyStack = [];  // 存储已看过的帖子 {html, date, tags, filepath}
+let currentPostData = null;  // 当前显示的帖子数据
+
+// 当前显示的卡片元素
+let currentCard = null;
+
+function buildCard(data) {
+  let sourceTag = '';
+  let sourceClass = '';
+  if (data.tags && data.tags.length) {
+    if (data.tags.includes('#专栏') || data.tags.includes('专栏')) {
+      sourceTag = '专栏'; sourceClass = 'column';
+    } else if (data.tags.includes('#交易体系') || data.tags.includes('交易体系')) {
+      sourceTag = '交易体系'; sourceClass = 'trade';
+    } else if (data.tags.includes('#三要素案例') || data.tags.includes('三要素案例')) {
+      sourceTag = '三要素案例'; sourceClass = 'trade';
+    }
+  }
+  if (!sourceTag && data.date && data.date.length >= 8) {
+    sourceTag = '帖子';
+  }
+
+  var metaHTML = '<div class="pc-meta">';
+  if (data.date) metaHTML += '<span class="pc-date">' + data.date + '</span>';
+  if (sourceTag) metaHTML += '<span class="pc-source-tag ' + sourceClass + '">' + sourceTag + '</span>';
+  metaHTML += '</div>';
+
+  return '<div class="post-card" id="currentPostCard">' +
+    metaHTML +
+    '<div class="pc-content">' + (data.html || '<p>加载失败</p>') + '</div>' +
+    '</div>';
+}
+
+function renderCard(data) {
+  var inner = document.getElementById('cardStackInner');
+  var oldCard = currentCard;
+
+  var newDiv = document.createElement('div');
+  newDiv.innerHTML = buildCard(data);
+  var newCard = newDiv.firstElementChild;
+
+  if (oldCard && oldCard !== newCard) {
+    oldCard.classList.add('slide-out-left');
+    inner.appendChild(newCard);
+    newCard.style.transform = 'translateX(-30px)';
+    newCard.style.opacity = '0';
+    requestAnimationFrame(function() {
+      newCard.style.transition = 'all .35s cubic-bezier(.4,0,.2,1)';
+      newCard.style.transform = 'translateY(0)';
+      newCard.style.opacity = '1';
+    });
+    setTimeout(function() {
+      if (oldCard && oldCard.parentNode) oldCard.parentNode.removeChild(oldCard);
+    }, 400);
+  } else {
+    inner.appendChild(newCard);
+    newCard.style.transform = 'translateY(0)';
+    newCard.style.opacity = '1';
+  }
+
+  currentCard = newCard;
+  updatePrevButton();
+}
+
+function loadInitialPost() {
+  {% if post and post.html %}
+  var initial = {{ post | tojson | safe }};
+  currentPostData = initial;
+  document.getElementById('cardStackInner').innerHTML = buildCard(initial);
+  currentCard = document.getElementById('currentPostCard');
+  readCount = 1;
+  updateCounter();
+  updatePrevButton();
+  {% else %}
+  fetchNextPost();
+  {% endif %}
+}
+
+function fetchNextPost() {
+  var btn = document.getElementById('btnNext');
+  btn.disabled = true;
+  btn.textContent = '加载中...';
+
+  fetch(apiBase + '/api/posts/random')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.error) { btn.textContent = '重试'; btn.disabled = false; return; }
+
+      // 把当前帖子推入历史栈
+      if (currentPostData) {
+        historyStack.push(currentPostData);
+      }
+
+      currentPostData = data;
+      renderCard(data);
+      readCount++;
+      updateCounter();
+      btn.disabled = false;
+      btn.textContent = '换一篇 →';
+    })
+    .catch(function() {
+      btn.textContent = '重试';
+      btn.disabled = false;
+    });
+}
+
+function nextCard() { fetchNextPost(); }
+
+function prevCard() {
+  if (historyStack.length === 0) return;
+
+  // 把当前帖子数据存入临时变量（如果想再前进可以恢复，但这里不实现前进）
+  var prevData = historyStack.pop();
+  currentPostData = prevData;
+  renderCard(prevData);
+  updatePrevButton();
+}
+
+function updatePrevButton() {
+  var btn = document.getElementById('btnPrev');
+  if (historyStack.length === 0) {
+    btn.disabled = true;
+    btn.textContent = '上一张';
+  } else {
+    btn.disabled = false;
+    btn.textContent = '上一张 (' + historyStack.length + ')';
+  }
+}
+
+function updateCounter() {
+  document.getElementById('counter').textContent = '已读 ' + readCount + ' 篇';
+}
+
+// 键盘导航
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'ArrowRight' || e.key === ' ') {
+    e.preventDefault();
+    nextCard();
+  } else if (e.key === 'ArrowLeft') {
+    e.preventDefault();
+    prevCard();
+  }
+});
+
+// 初始化
+loadInitialPost();
+</script>
+
+<div style="text-align:center;margin-top:1rem;font-family:'Space Mono',monospace;font-size:0.55rem;color:var(--muted);letter-spacing:0.1em;">
+  按 → 或空格键翻下一篇 · 按 ← 返回上一张
+</div>
+{% endblock %}

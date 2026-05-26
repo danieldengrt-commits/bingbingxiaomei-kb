@@ -1,0 +1,379 @@
+{% extends "base.html" %}
+
+{% block title %}核心文章目录 · 冰冰小美知识库{% endblock %}
+
+{% block extra_css %}
+  .core-header {
+    margin-bottom: 1.5rem;
+  }
+  .core-header .breadcrumb {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--muted);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+  .core-header .breadcrumb a {
+    color: var(--ink);
+    text-decoration: none;
+    font-weight: 700;
+  }
+  .core-header .breadcrumb a:hover { text-decoration: underline; text-underline-offset: 3px; }
+  .core-header h1 {
+    font-weight: 900;
+    font-size: clamp(1.5rem, 3vw, 2rem);
+  }
+
+  .core-summary {
+    background: #fff;
+    border: 3px solid var(--border);
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem;
+    font-size: 0.82rem;
+    color: #555;
+    line-height: 1.7;
+  }
+  .core-summary strong { color: var(--accent); }
+
+  /* 分组 */
+  .core-group {
+    margin-bottom: 2rem;
+  }
+  .core-group .cg-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 3px solid var(--border);
+    cursor: pointer;
+    user-select: none;
+    transition: opacity .12s;
+  }
+  .core-group .cg-header:hover {
+    opacity: 0.7;
+  }
+  .core-group.collapsed .cg-header {
+    margin-bottom: 0.5rem;
+    border-bottom-width: 2px;
+    opacity: 0.7;
+  }
+  .core-group .cg-toggle {
+    margin-left: auto;
+    font-size: 0.65rem;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    flex-shrink: 0;
+  }
+  .core-group .cg-toggle-text {
+    font-size: 0.6rem;
+  }
+  .core-group .cg-arrow {
+    font-size: 0.6rem;
+    color: var(--muted);
+    transition: transform .2s;
+    flex-shrink: 0;
+  }
+  .core-group.collapsed .cg-arrow {
+    transform: rotate(-90deg);
+  }
+  .core-group[data-pinned="1"] .cg-header {
+    cursor: default;
+  }
+  .core-group[data-pinned="1"] .cg-header:hover {
+    opacity: 1;
+  }
+  .core-group .cg-icon {
+    font-size: 1.2rem;
+  }
+  .core-group .cg-name {
+    font-weight: 900;
+    font-size: 1rem;
+  }
+  .core-group .cg-count {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.55rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+  }
+
+  .core-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  /* 收起时只显示前 3 篇 */
+  .core-group.collapsed .core-item:nth-child(n+4) {
+    display: none;
+  }
+  .core-group.collapsed .core-item:nth-child(3) {
+    border-bottom: 1px dashed var(--border);
+  }
+
+  /* 系列筛选标签 */
+  .series-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-top: 0.4rem;
+    margin-left: auto;
+  }
+  .series-tag {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.5rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.2rem 0.55rem;
+    border: 2px solid var(--border);
+    background: #fff;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all .12s;
+    white-space: nowrap;
+  }
+  .series-tag:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .series-tag.active {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: #fff;
+  }
+  .series-tag .st-count {
+    opacity: 0.55;
+    margin-left: 0.2rem;
+  }
+
+  .core-item {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+    padding: 0.5rem 0.6rem;
+    border-bottom: 1px solid rgba(0,0,0,.05);
+    text-decoration: none;
+    color: var(--ink);
+    transition: background .1s;
+  }
+  .core-item:hover { background: rgba(0,0,0,.02); }
+  .core-item.hidden-by-filter {
+    display: none;
+  }
+  .core-item .ci-date {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.58rem;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+    min-width: 85px;
+  }
+  .core-item .ci-title {
+    flex: 1;
+    font-size: 0.82rem;
+    line-height: 1.4;
+    font-weight: 600;
+  }
+  .core-item .ci-chars {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.45rem;
+    color: #aaa;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+  }
+
+
+  .cf-layers {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin: 1.25rem 0;
+    padding: 1rem 1.25rem;
+    background: #fff;
+    border: 3px solid var(--border);
+  }
+  .cf-layer {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    font-size: 0.8rem;
+  }
+  .cf-l-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.5rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    background: var(--ink);
+    color: #fff;
+    padding: 0.1rem 0.5rem;
+    flex-shrink: 0;
+  }
+  .cf-l-name {
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .cf-l-desc {
+    color: var(--muted);
+  }
+
+  .cf-note {
+    padding: 1rem 1.25rem;
+    background: var(--paper);
+    border: 2px solid var(--border);
+  }
+  .cf-note p {
+    margin-bottom: 0.5rem;
+  }
+  .cf-note p:last-child {
+    margin-bottom: 0;
+  }
+
+  @media (max-width: 900px) {
+    .core-item { flex-wrap: wrap; }
+    .core-item .ci-date { min-width: auto; }
+    .series-filters { margin-left: 0; width: 100%; }
+    .cf-layer { flex-wrap: wrap; }
+  }
+{% endblock %}
+
+{% block content %}
+<div class="core-header">
+  <div class="breadcrumb"><a href="{{ url_for('posts_landing') }}">看看帖子</a> / 核心文章</div>
+  <h1>核心文章目录</h1>
+</div>
+
+<div class="core-summary">
+  <p>共 <strong>{{ total_core }}</strong> 篇核心文章，判断标准只有一条：<strong>这篇文章在冰美体系里承担什么角色。</strong> 置顶帖是信仰地基，体系文章给框架，深度帖子给血肉。</p>
+</div>
+
+{% for group_key, group in groups.items() %}
+{% if group.articles %}
+<div class="core-group" id="group-{{ group_key }}"{% if group_key == "pinned" %} data-pinned="1"{% endif %}>
+  <div class="cg-header"{% if group_key != "pinned" %} onclick="toggleGroup('{{ group_key }}')"{% endif %}>
+    <span class="cg-icon">{{ group.icon | safe }}</span>
+    <span class="cg-name">{{ group.name }}</span>
+    <span class="cg-count" id="count-{{ group_key }}">{{ group.articles | length }} 篇</span>
+    {% if group_key == "column" and column_series_tags %}
+    <div class="series-filters" onclick="event.stopPropagation()">
+      <span class="series-tag active" data-series="*">全部<span class="st-count">{{ group.articles | length }}</span></span>
+      {% for sk in column_series_tags %}
+      <span class="series-tag" data-series="{{ sk }}">{{ sk.split('/')[0] }}<span class="st-count">?</span></span>
+      {% endfor %}
+    </div>
+    {% endif %}
+    {% if group_key != "pinned" %}
+    <span class="cg-toggle"><span class="cg-toggle-text">展开更多</span> <span class="cg-arrow">&#x25BC;</span></span>
+    {% endif %}
+  </div>
+  <div class="core-list"{% if group_key == "column" %} id="column-list"{% endif %}>
+    {% for item in group.articles %}
+    <a href="/posts/read?path={{ item.filepath | urlencode }}" class="core-item"
+       {% if group_key == "column" %}data-series="{{ item.series_tags | join(',') }}"{% endif %}>
+      <span class="ci-date">{{ item.date[:10] if item.date else '?' }}</span>
+      <span class="ci-title">{{ item.title if item.title else (item.snippet | striptags | truncate(60) if item.snippet else item.filepath.split('/')[-1].replace('.md','')) }}</span>
+      {% if item.char_count %}
+      <span class="ci-chars">{{ (item.char_count // 1000) if item.char_count >= 1000 else '' }}{{ 'k字' if item.char_count >= 1000 else item.char_count ~ '字' }}</span>
+      {% endif %}
+    </a>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+{% endfor %}
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+// 分组伸缩
+function toggleGroup(key) {
+  var el = document.getElementById('group-' + key);
+  if (!el) return;
+  el.classList.toggle('collapsed');
+  var toggleText = el.querySelector('.cg-toggle-text');
+  if (toggleText) {
+    toggleText.textContent = el.classList.contains('collapsed') ? '展开更多' : '收起';
+  }
+}
+
+// 初始状态：全部默认收起，只露前 3 篇预览（置顶帖除外）
+(function() {
+  var allGroups = document.querySelectorAll('.core-group');
+  allGroups.forEach(function(g) {
+    if (!g.hasAttribute('data-pinned')) {
+      g.classList.add('collapsed');
+    }
+  });
+})();
+</script>
+{% if column_series_tags %}
+<script>
+(function() {
+  var tags = document.querySelectorAll('#group-column .series-tag');
+  var items = document.querySelectorAll('#column-list .core-item');
+  var countEl = document.getElementById('count-column');
+
+  // 预计算每个标签覆盖的文章数
+  var tagCounts = {};
+  items.forEach(function(item) {
+    var series = (item.getAttribute('data-series') || '').split(',').filter(Boolean);
+    series.forEach(function(s) {
+      tagCounts[s] = (tagCounts[s] || 0) + 1;
+    });
+  });
+
+  // 填入标签数字
+  tags.forEach(function(tag) {
+    var sk = tag.getAttribute('data-series');
+    var countSpan = tag.querySelector('.st-count');
+    if (sk === '*') {
+      countSpan.textContent = items.length;
+    } else if (tagCounts[sk]) {
+      countSpan.textContent = tagCounts[sk];
+    } else {
+      tag.style.opacity = '0.35';
+      countSpan.textContent = '0';
+    }
+  });
+
+  // 点击筛选
+  var activeTag = document.querySelector('#group-column .series-tag.active');
+  tags.forEach(function(tag) {
+    tag.addEventListener('click', function() {
+      var sk = tag.getAttribute('data-series');
+
+      // 切换 active
+      if (activeTag) activeTag.classList.remove('active');
+      tag.classList.add('active');
+      activeTag = tag;
+
+      // 筛选
+      var visible = 0;
+      items.forEach(function(item) {
+        var itemSeries = (item.getAttribute('data-series') || '').split(',').filter(Boolean);
+        if (sk === '*' || itemSeries.indexOf(sk) !== -1) {
+          item.classList.remove('hidden-by-filter');
+          visible++;
+        } else {
+          item.classList.add('hidden-by-filter');
+        }
+      });
+
+      // 更新计数
+      countEl.textContent = visible + ' 篇';
+
+      // 展开专栏组（收起状态筛选没意义）
+      var colGroup = document.getElementById('group-column');
+      if (colGroup) {
+        colGroup.classList.remove('collapsed');
+        var toggleText = colGroup.querySelector('.cg-toggle-text');
+        if (toggleText) toggleText.textContent = '收起';
+      }
+    });
+  });
+})();
+</script>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,441 @@
+{
+  "2026-W18": {
+    "date": "2026-05-01",
+    "results": [
+      {
+        "ts_code": "TS572",
+        "name": "存储芯片",
+        "type": "concept",
+        "sentiment": [
+          "兆易创新",
+          "北京君正"
+        ],
+        "sentiment_stocks": [
+          {
+            "name": "兆易创新",
+            "ts_code": "603986.SH",
+            "change_5d": 5.14
+          },
+          {
+            "name": "北京君正",
+            "ts_code": "300223.SZ",
+            "change_5d": 3.66
+          }
+        ],
+        "category": "硬科技",
+        "heat": 4,
+        "heat_name": "发热",
+        "weekly_change": 9.92,
+        "amount_change_pct": 3.314992645660253,
+        "consecutive_up": 2,
+        "consecutive_down": 0,
+        "volatility": 6.131473366578817,
+        "volume": 3713549900.0,
+        "amount": 546929316822.0
+      },
+      {
+        "ts_code": "801081.SI",
+        "name": "半导体",
+        "type": "sw",
+        "sentiment": [
+          "中芯国际",
+          "北方华创"
+        ],
+        "sentiment_stocks": [
+          {
+            "name": "中芯国际",
+            "ts_code": "688981.SH",
+            "change_5d": 7.0
+          },
+          {
+            "name": "北方华创",
+            "ts_code": "002371.SZ",
+            "change_5d": 13.6
+          }
+        ],
+        "category": "硬科技",
+        "heat": 4,
+        "heat_name": "发热",
+        "weekly_change": 7.95,
+        "amount_change_pct": 1.9514262902830437,
+        "consecutive_up": 2,
+        "consecutive_down": 0,
+        "volatility": 7.813200007168068,
+        "volume": 12546140000.0,
+        "amount": 1167536560000.0
+      },
+      {
+        "ts_code": "801078.SI",
+        "name": "自动化设备",
+        "type": "sw",
+        "sentiment": [
+          "汇川技术",
+          "埃斯顿"
+        ],
+        "sentiment_stocks": [
+          {
+            "name": "汇川技术",
+            "ts_code": "300124.SZ",
+            "change_5d": 5.95
+          },
+          {
+            "name": "埃斯顿",
+            "ts_code": "002747.SZ",
+            "change_5d": 6.06
+          }
+        ],
+        "category": "智能制造",
+        "heat": 4,
+        "heat_name": "发热",
+        "weekly_change": 3.5999999999999996,
+        "amount_change_pct": -16.46459017044635,
+        "consecutive_up": 2,
+        "consecutive_down": 0,
+        "volatility": 5.85414643286582,
+        "volume": 3865020000.0,
+        "amount": 188846020000.0
+      },
+      {
+        "ts_code": "801737.SI",
+        "name": "电池",
+        "type": "sw",
+        "sentiment": [
+          "宁德时代",
+          "亿纬锂能"
+        ],
+        "sentiment_stocks": [
+          {
+            "name": "宁德时代",
+            "ts_code": "300750.SZ",
+            "change_5d": -2.0
+          },
+          {
+            "name": "亿纬锂能",
+            "ts_code": "300014.SZ",
+            "change_5d": -0.3
+          }
+        ],
+        "category": "新能源",
+        "heat": 3,
+        "heat_name": "常温",
+        "weekly_change": 1.87,
+        "amount_change_pct": -7.603145077539095,
+        "consecutive_up": 0,
+        "consecutive_down": 1,
+        "volatility": 13.385722750287437,
+        "volume": 15260390000.0,
+        "amount": 565672210000.0
+      },
+      {
+        "ts_code": "801735.SI",
+        "name": "光伏设备",
+        "type": "sw",
+        "sentiment": [
+          "隆基绿能",
+          "阳光电源"
+        ],
+        "sentiment_stocks": [
+          {
+            "name": "隆基绿能",
+            "ts_code": "601012.SH",
+            "change_5d": -5.35
+          },
+          {
+            "name": "阳光电源",
+            "ts_code": "300274.SZ",
+            "change_5d": 2.71
+          }
+        ],
+        "category": "新能源",
+        "heat": 3,
+        "heat_name": "常温",
+        "weekly_change": 1.59,
+        "amount_change_pct": -13.087776930587394,
+        "consecutive_up": 2,
+        "consecutive_down": 0,
+        "volatility": 7.145841216652184,
+        "volume": 8162530000.0,
+        "amount": 215766990000.0
+      },
+      {
+        "ts_code": "TS451",
+        "name": "智能电网",
+        "type": "concept",
+        "sentiment": [
+          "国电南瑞",
+          "思源电气"
+        ],
+        "sentiment_stocks": [
+          {
+            "name": "国电南瑞",
+            "ts_code": "600406.SH",
+            "change_5d": -2.15
+          },
+          {
+            "name": "思源电气",
+            "ts_code": "002028.SZ",
+            "change_5d": -12.21
+          }
+        ],
+        "category": "新基建",
+        "heat": 3,
+        "heat_name": "常温",
+        "weekly_change": 0.3147952903645153,
+        "amount_change_pct": -19.305495110623124,
+        "consecutive_up": 0,
+        "consecutive_down": 1,
+        "volatility": 4.940179243672599,
+        "volume": 58214814.0,
+        "amount": 180100633.7
+      },
+      {
+        "ts_code": "801104.SI",
+        "name": "软件开发",
+        "type": "sw",
+        "sentiment": [
+          "用友网络",
+          "金山办公"
+        ],
+        "sentiment_stocks": [
+          {
+            "name": "用友网络",
+            "ts_code": "600588.SH",
+            "change_5d": -5.58
+          },
+          {
+            "name": "金山办公",
+            "ts_code": "688111.SH",
+            "change_5d": 1.13
+          }
+        ],
+        "category": "数字经济",
+        "heat": 3,
+        "heat_name": "常温",
+        "weekly_change": -0.36,
+        "amount_change_pct": -19.294586151292574,
+        "consecutive_up": 2,
+        "consecutive_down": 0,
+        "volatility": 5.211104732780202,
+        "volume": 8453730000.0,
+        "amount": 193435890000.0
+      },
+      {
+        "ts_code": "TS709",
+        "name": "军工",
+        "type": "concept",
+        "sentiment": [
+          "中航沈飞",
+          "航发动力"
+        ],
+        "sentiment_stocks": [
+          {
+            "name": "中航沈飞",
+            "ts_code": "600760.SH",
+            "change_5d": -2.99
+          },
+          {
+            "name": "航发动力",
+            "ts_code": "600893.SH",
+            "change_5d": -5.82
+          }
+        ],
+        "category": "国防",
+        "heat": 2,
+        "heat_name": "退潮",
+        "weekly_change": 0.18,
+        "amount_change_pct": -31.172350238707562,
+        "consecutive_up": 2,
+        "consecutive_down": 0,
+        "volatility": 4.984435106713702,
+        "volume": 10177333388.0,
+        "amount": 326225601390.2
+      },
+      {
+        "ts_code": "TS689",
+        "name": "创新药",
+        "type": "concept",
+        "sentiment": [
+          "恒瑞医药",
+          "信立泰"
+        ],
+        "sentiment_stocks": [
+          {
+            "name": "恒瑞医药",
+            "ts_code": "600276.SH",
+            "change_5d": -3.87
+          },
+          {
+            "name": "信立泰",
+            "ts_code": "002294.SZ",
+            "change_5d": -7.62
+          }
+        ],
+        "category": "医药",
+        "heat": 2,
+        "heat_name": "退潮",
+        "weekly_change": -1.022575380331668,
+        "amount_change_pct": 1.8911787995970981,
+        "consecutive_up": 0,
+        "consecutive_down": 2,
+        "volatility": 4.7431028492151,
+        "volume": 34157801.79,
+        "amount": 129954288.38700001
+      },
+      {
+        "ts_code": "TS737",
+        "name": "储能",
+        "type": "concept",
+        "sentiment": [
+          "派能科技",
+          "鹏辉能源"
+        ],
+        "sentiment_stocks": [
+          {
+            "name": "派能科技",
+            "ts_code": "688063.SH",
+            "change_5d": 1.93
+          },
+          {
+            "name": "鹏辉能源",
+            "ts_code": "300438.SZ",
+            "change_5d": 24.24
+          }
+        ],
+        "category": "新能源",
+        "heat": 2,
+        "heat_name": "退潮",
+        "weekly_change": -1.3135605314482044,
+        "amount_change_pct": -18.217609893782456,
+        "consecutive_up": 0,
+        "consecutive_down": 1,
+        "volatility": 6.657615449830399,
+        "volume": 97493162.21000001,
+        "amount": 336889971.599
+      },
+      {
+        "ts_code": "TS475",
+        "name": "新能源",
+        "type": "concept",
+        "sentiment": [
+          "比亚迪",
+          "赛力斯"
+        ],
+        "sentiment_stocks": [
+          {
+            "name": "比亚迪",
+            "ts_code": "002594.SZ",
+            "change_5d": 3.54
+          },
+          {
+            "name": "赛力斯",
+            "ts_code": "601127.SH",
+            "change_5d": -2.31
+          }
+        ],
+        "category": "新能源",
+        "heat": 2,
+        "heat_name": "退潮",
+        "weekly_change": -1.7721914534027685,
+        "amount_change_pct": -14.714457850360557,
+        "consecutive_up": 0,
+        "consecutive_down": 1,
+        "volatility": 7.773963008223965,
+        "volume": 102993591.04,
+        "amount": 434263836.396
+      },
+      {
+        "ts_code": "TS876",
+        "name": "AI芯片",
+        "type": "concept",
+        "sentiment": [
+          "寒武纪",
+          "海光信息"
+        ],
+        "sentiment_stocks": [
+          {
+            "name": "寒武纪",
+            "ts_code": "688256.SH",
+            "change_5d": 25.69
+          },
+          {
+            "name": "海光信息",
+            "ts_code": "688041.SH",
+            "change_5d": 3.95
+          }
+        ],
+        "category": "硬科技",
+        "heat": 2,
+        "heat_name": "退潮",
+        "weekly_change": -2.005580987289416,
+        "amount_change_pct": -26.049145880597536,
+        "consecutive_up": 2,
+        "consecutive_down": 0,
+        "volatility": 6.664839752067434,
+        "volume": 63687248.839999996,
+        "amount": 556016623.506
+      },
+      {
+        "ts_code": "801738.SI",
+        "name": "电网设备",
+        "type": "sw",
+        "sentiment": [
+          "许继电气",
+          "平高电气"
+        ],
+        "sentiment_stocks": [
+          {
+            "name": "许继电气",
+            "ts_code": "000400.SZ",
+            "change_5d": -2.36
+          },
+          {
+            "name": "平高电气",
+            "ts_code": "600312.SH",
+            "change_5d": 0.37
+          }
+        ],
+        "category": "新基建",
+        "heat": 2,
+        "heat_name": "退潮",
+        "weekly_change": -2.1,
+        "amount_change_pct": -32.976792885916,
+        "consecutive_up": 0,
+        "consecutive_down": 1,
+        "volatility": 7.288566804035798,
+        "volume": 13436990000.0,
+        "amount": 236542210000.0
+      },
+      {
+        "ts_code": "801102.SI",
+        "name": "通信设备",
+        "type": "sw",
+        "sentiment": [
+          "中兴通讯",
+          "烽火通信"
+        ],
+        "sentiment_stocks": [
+          {
+            "name": "中兴通讯",
+            "ts_code": "000063.SZ",
+            "change_5d": 0.88
+          },
+          {
+            "name": "烽火通信",
+            "ts_code": "600498.SH",
+            "change_5d": -10.68
+          }
+        ],
+        "category": "数字经济",
+        "heat": 2,
+        "heat_name": "退潮",
+        "weekly_change": -2.32,
+        "amount_change_pct": -37.45143078033654,
+        "consecutive_up": 0,
+        "consecutive_down": 1,
+        "volatility": 8.70602553227609,
+        "volume": 10134550000.0,
+        "amount": 649985310000.0
+      }
+    ]
+  }
+}

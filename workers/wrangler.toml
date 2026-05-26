@@ -1,0 +1,19 @@
+name = "bbxmkb-api"
+main = "api.js"
+compatibility_date = "2026-05-25"
+compatibility_flags = ["nodejs_compat"]
+
+# D1 数据库绑定
+[[d1_databases]]
+binding = "DB"
+database_name = "bbxmkb-db"
+database_id = "your-d1-database-id"
+
+# 路由：bbxmkb.cn/api/* 由 Worker 处理
+[[routes]]
+pattern = "bbxmkb.cn/api/*"
+zone_name = "bbxmkb.cn"
+
+# 环境变量
+[vars]
+CORS_ORIGIN = "https://bbxmkb.cn"
